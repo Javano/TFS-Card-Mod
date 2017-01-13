@@ -117,6 +117,21 @@ function formatCard(card) {
     newCardID.find("a").css("color", "#000000");
     newCardID.find("a").css("opacity", "0.6");
     newCardID.find("a").css("font-size", "13px");
+    cardDetails.find(".title").css("font-family", "Arial");
+    cardDetails.find(".title").css("overflow-x", "hidden");
+    cardDetails.find(".title").css("overflow-y", "auto");
+    cardDetails.find(".title").css("overflow-wrap", "break-word");
+    cardDetails.find(".title").css("position", "absolute");
+    cardDetails.find(".title").css("width", "auto");
+    cardDetails.find(".title").css("left", "15px");
+    cardDetails.find(".title").css("right", "5px");
+    cardDetails.find(".cardFooter").css("position", "absolute");
+    cardDetails.find(".cardFooter").css("width", "auto");
+    cardDetails.find(".cardFooter").css("left", "15px");
+    cardDetails.find(".cardFooter").css("right", "0px");
+    cardDetails.find(".cardFooter").css("bottom", "0px");
+    $(card).find('.taskBoardCardColumn2').css("width", "70%");
+    $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important");
     cardShadow.css("width", "15px");
     cardDetails.css("width", "90%");
     $(idBar).prepend("<div class='buildNumDiv' style='margin: 6px 3px 0 6px; float: left; font-weight: bold;'></div>");
@@ -200,8 +215,6 @@ function initializeCard(card) {
 
 function processTags(card, tagsStr) {
     var cardFooter = $(card).find('.cardFooter .taskBoardCardColumn2');
-    $(cardFooter).css("width", "70%");
-    $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important;");
     $(cardFooter).text("");
     if (tagsStr) {
         var tagsArr = tagsStr.split(";");
@@ -226,7 +239,7 @@ function processAvatar(card, assignedUserStr) {
         var userID = assignedUserStr.substring(assignedUserStr.indexOf('<') + 1, assignedUserStr.indexOf('>'));
         var avatarURL = "/tfs/MainProjects/_api/_common/IdentityImage?id=&identifier=" + userID;
         $(card).css("background-image", "url(" + encodeURI(avatarURL) + ")");
-        $(card).css("background-size", "30px");
+        $(card).css("background-size", "28px");
         $(card).css("background-repeat", "no-repeat");
         $(card).css("background-position", "top right");
     }
