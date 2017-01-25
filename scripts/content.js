@@ -1,3 +1,6 @@
+
+
+
 var bbfgURL = "https://bbfg.itracks.com/BBFG4/en-us/login.aspx";
 var goURL = "https:/go.itracks.com/GO/en-US/Login.aspx";
 var goVersion = "";
@@ -6,9 +9,28 @@ var bbfgVersion = "";
 var bbfgVersionInt = "";
 var pattern = /(\d+)\.\d+\.\d+\.\d+/
 var hexPtrn = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+var tagIconDict = {
+    CHAT: "icons/chat.png",
+    VIDEOCHAT: "icons/vchat.png",
+    VIDEOVAULT: "icons/vault.png",
+    IMARKIT: "icons/imarkit.png",
+    IDI: "icons/idi.png",
+    BOARD: "icons/board.png",
+    ANDROID: "icons/android.png",
+    IOS: "icons/ios.png",
+    IE: "icons/ie.png",
+    FIREFOX: "icons/firefox.png",
+    CHROME: "icons/chrome.png",
+    SAFARI: "icons/safari.png",
+    EDGE: "icons/edge.png"
+
+};
 
 $(document).ready(function () {
-    $('head').append('<style type="text/css" > .card { border-radius:10px;     box-shadow: 0px 1px 1px #aaaaaa; } .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
+
+
+
+    $('head').append('<style type="text/css" > .card { border-radius:10px;     box-shadow: 0px 1px 1px #aaaaaa; } .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
 
     document.title = $(".menu-bar li span").first().text();
 
@@ -20,6 +42,10 @@ $(document).ready(function () {
     }, 10 * 1000);
 
     setInterval(function () {
+
+        //Custom commands override hook for RTE
+        rteOverride();
+
         if (goVersion) {
             $("#goVerNum").html(goVersion);
         }
@@ -123,8 +149,8 @@ function formatCard(card) {
     cardDetails.find(".title").css("overflow-wrap", "break-word");
     cardDetails.find(".title").css("position", "absolute");
     cardDetails.find(".title").css("width", "auto");
-    cardDetails.find(".title").css("left", "15px");
-    cardDetails.find(".title").css("right", "5px");
+    cardDetails.find(".title").css("left", "12px");
+    cardDetails.find(".title").css("right", "2px");
     cardDetails.find(".cardFooter").css("position", "absolute");
     cardDetails.find(".cardFooter").css("width", "auto");
     cardDetails.find(".cardFooter").css("left", "15px");
@@ -198,6 +224,11 @@ function fetchTaskInfo(card) {
                 $(card).attr("task-buildnum", "");
             }
 
+            // Fill in "Remaining Work" field for Bugs fix
+            if (responseText["__wrappedArray"][0]["fields"]["25"] == "Bug" && responseText["__wrappedArray"][0]["fields"]["10043"]) {
+                $(card).find('.taskBoardCardColumn3').text(responseText["__wrappedArray"][0]["fields"]["10043"] + " h");
+            }
+
             processTags(card, responseText["__wrappedArray"][0]["fields"]["80"]);
             processAvatar(card, responseText["__wrappedArray"][0]["fields"]["24"]);
         })
@@ -222,10 +253,16 @@ function processTags(card, tagsStr) {
         for (var i = 0; i < tagsArr.length; i++) {
             var match = hexPtrn.exec(tagsArr[i]);
             if (!match) {
-                if ($(cardFooter).text() != "") {
-                    $(cardFooter).text($(cardFooter).text() + ", ");
+                if (tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
+
+                    $(card).find(".buildNumDiv").after("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 6px;cursor: move;'><img src='" + chrome.extension.getURL(tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
+
+                } else {
+                    if ($(cardFooter).text() != "") {
+                        $(cardFooter).text($(cardFooter).text() + ", ");
+                    }
+                    $(cardFooter).text($(cardFooter).text() + tagsArr[i]);
                 }
-                $(cardFooter).text($(cardFooter).text() + tagsArr[i]);
             } else {
                 $(card).find(".cardShadow").css("background-color", match[0]);
             }
@@ -243,4 +280,37 @@ function processAvatar(card, assignedUserStr) {
         $(card).css("background-repeat", "no-repeat");
         $(card).css("background-position", "top right");
     }
+}
+
+function rteOverride() {
+    $('.richeditor-editarea iframe:not([listenerAdded])').each(function (i, obj) {
+        if (obj.contentWindow.document.body) {
+            obj.contentWindow.document.body.addEventListener('keydown', function (e) {
+                switch (e.which) {
+                    case (9):
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            $('.richeditor-toolbar-outdent').click();
+                        } else {
+                            e.preventDefault();
+                            $('.richeditor-toolbar-indent').click();
+                        }
+                        break;
+                    case (56):
+                        if (e.ctrlKey) {
+                            if (e.shiftKey) {
+                                e.preventDefault();
+                                $('.richeditor-toolbar-insertorderedlist').click();
+                            } else {
+                                e.preventDefault();
+                                $('.richeditor-toolbar-insertunorderedlist').click();
+                            }
+                        }
+                        break;
+                }
+
+            });
+            $(this).attr("listenerAdded", "true");
+        }
+    });
 }
