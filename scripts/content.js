@@ -9,6 +9,7 @@ var bbfgVersion = "";
 var bbfgVersionInt = "";
 var pattern = /(\d+)\.\d+\.\d+\.\d+/
 var hexPtrn = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+var fNamePtrn = /ITRACKS\\(\w+)\./
 var tagIconDict = {
     CHAT: "icons/chat.png",
     VIDEOCHAT: "icons/vchat.png",
@@ -16,6 +17,7 @@ var tagIconDict = {
     IMARKIT: "icons/imarkit.png",
     IDI: "icons/idi.png",
     BOARD: "icons/board.png",
+    BBFG: "icons/board.png",
     ANDROID: "icons/android.png",
     IOS: "icons/ios.png",
     IE: "icons/ie.png",
@@ -26,38 +28,79 @@ var tagIconDict = {
 
 };
 
+
+var settingColors = false;
+var settingBuildNums = false;
+var settingTagIcons = false;
+var settingDisplayTags = false;
+var settingNameStamp = false;
+var settingDisplayAvatar = false;
+var settingBugHours = false;
+var settingScrolls = false;
+var settingCosmetics = false;
+var settingRTECommands = false;
+var settingFixTitle = false;
+var settingsLoaded = false;
+
+
+
+
 $(document).ready(function () {
 
+    loadSettings();
+
+    checkIfReady();
+
+});
+
+function checkIfReady() {
+    if (settingsLoaded) {
+        run();
+    } else {
+        setTimeout(checkIfReady, 250)
+    }
+}
+
+function run() {
+    if (settingCosmetics) {
+        $('head').append('<style type="text/css"> .card { border-radius:10px;     box-shadow: 0px 1px 1px #aaaaaa; } .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
+    }
+    if (settingScrolls) {
+        $('head').append('<style type="text/css"> ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
+    }
+    if (settingFixTitle) {
+        document.title = $(".menu-bar li span").first().text();
+    }
 
 
-    $('head').append('<style type="text/css" > .card { border-radius:10px;     box-shadow: 0px 1px 1px #aaaaaa; } .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
-
-    document.title = $(".menu-bar li span").first().text();
-
-
-    setupPage();
-
+    if (settingBuildNums) {
+        setupPage();
+        setInterval(function () {
+            updateVerNumbers();
+        }, 10 * 1000);
+    }
     setInterval(function () {
-        updateVerNumbers();
-    }, 10 * 1000);
 
-    setInterval(function () {
-
-        //Custom commands override hook for RTE
-        rteOverride();
-
-        if (goVersion) {
-            $("#goVerNum").html(goVersion);
-        }
-        if (bbfgVersion) {
-            $("#bbfgVerNum").html(bbfgVersion);
+        if (settingRTECommands) {
+            //Custom commands override hook for RTE
+            rteOverride();
         }
 
+        if (settingBuildNums) {
+            if (goVersion) {
+                $("#goVerNum").html(goVersion);
+            }
+            if (bbfgVersion) {
+                $("#bbfgVerNum").html(bbfgVersion);
+            }
+        }
         var newCards = [];
 
         //Find unprocessed cards and style them
         $('.card:not([task-buildnum])').each(function (i, obj) {
-            initializeCard(this);
+            if (settingBuildNums) {
+                initializeCard(this);
+            }
             newCards.push($(this));
 
         });
@@ -66,22 +109,25 @@ $(document).ready(function () {
         $(newCards).each(function (i, obj) {
             var card = newCards[i];
             $(card).attr("task-buildnum", "pending");
+
             //Modify cosmetics
             formatCard(card);
+
+
             //Fetch and display task details
             fetchTaskInfo(card);
             //Card has been processed. Remove from "New Cards" array.
             $(newCards).remove(card);
         });
 
-        //Update pre-existing cards
-        $('.card[task-buildnum][task-buildnum!="pending"]').each(function (i, obj) {
-            evaluateCardVer(this, $(this).attr("task-buildnum"));
-        });
-
+        if (settingBuildNums) {
+            //Update pre-existing cards
+            $('.card[task-buildnum][task-buildnum!="pending"]').each(function (i, obj) {
+                evaluateCardVer(this, $(this).attr("task-buildnum"));
+            });
+        }
     }, 100);
-
-});
+}
 
 function setupPage() {
     $("#header-row").append('<span class="slash">/</span><span> BBFG Version: </span><span id="bbfgVerNum"><img class="load-spinner" id="bbfgVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
@@ -123,44 +169,56 @@ function updateVerNumbers() {
 }
 
 function formatCard(card) {
-    card.find(".cardControls").css("float", "left");
     var cardID = $(card).find(".cardId");
     var cardShadow = $(card).find(".cardShadow");
     var cardDetails = $(card).find(".cardDetails");
     var idBar = $(cardDetails).find(".idBar");
+    var cardControls = $(idBar).find(".cardControls");
     var taskNum = $(cardID).find('a').text();
-    $(cardShadow).prepend($(cardID)[0].outerHTML);
-    $(cardID).remove();
-    var newCardID = $(cardShadow).find(".cardId");
-    newCardID.css("width", "7px");
-    newCardID.css("word-wrap", "break-word");
-    newCardID.css("margin", "0px");
-    newCardID.css("text-align", "center");
-    newCardID.css("position", "relative");
-    newCardID.css("left", "3px");
-    newCardID.find("a").css("text-decoration", "none");
-    newCardID.find("a").css("outline", "none");
-    newCardID.find("a").css("color", "#000000");
-    newCardID.find("a").css("opacity", "0.6");
-    newCardID.find("a").css("font-size", "13px");
-    cardDetails.find(".title").css("font-family", "Arial");
-    cardDetails.find(".title").css("overflow-x", "hidden");
-    cardDetails.find(".title").css("overflow-y", "auto");
-    cardDetails.find(".title").css("overflow-wrap", "break-word");
-    cardDetails.find(".title").css("position", "absolute");
-    cardDetails.find(".title").css("width", "auto");
-    cardDetails.find(".title").css("left", "12px");
-    cardDetails.find(".title").css("right", "2px");
-    cardDetails.find(".cardFooter").css("position", "absolute");
-    cardDetails.find(".cardFooter").css("width", "auto");
-    cardDetails.find(".cardFooter").css("left", "15px");
-    cardDetails.find(".cardFooter").css("right", "0px");
-    cardDetails.find(".cardFooter").css("bottom", "0px");
-    $(card).find('.taskBoardCardColumn2').css("width", "70%");
-    $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important");
-    cardShadow.css("width", "15px");
-    cardDetails.css("width", "90%");
-    $(idBar).prepend("<div class='buildNumDiv' style='margin: 6px 3px 0 6px; float: left; font-weight: bold;'></div>");
+
+    if (settingCosmetics) {
+        $(cardShadow).prepend($(cardID)[0].outerHTML);
+        $(cardID).remove();
+        var newCardID = $(cardShadow).find(".cardId");
+        newCardID.css("width", "7px");
+        newCardID.css("word-wrap", "break-word");
+        newCardID.css("margin", "0px");
+        newCardID.css("text-align", "center");
+        newCardID.css("position", "relative");
+        newCardID.css("left", "3px");
+        newCardID.find("a").css("text-decoration", "none");
+        newCardID.find("a").css("outline", "none");
+        newCardID.find("a").css("color", "#000000");
+        newCardID.find("a").css("opacity", "0.6");
+        newCardID.find("a").css("font-size", "13px");
+        cardDetails.find(".title").css("font-family", "Arial");
+        cardDetails.find(".title").css("overflow-x", "hidden");
+        cardDetails.find(".title").css("overflow-y", "hidden");
+        cardDetails.find(".title").css("overflow-wrap", "break-word");
+        cardDetails.find(".title").css("position", "absolute");
+        cardDetails.find(".title").css("width", "auto");
+        cardDetails.find(".title").css("left", "12px");
+        cardDetails.find(".title").css("right", "2px");
+        cardDetails.find(".cardFooter").css("position", "absolute");
+        cardDetails.find(".cardFooter").css("width", "auto");
+        cardDetails.find(".cardFooter").css("left", "15px");
+        cardDetails.find(".cardFooter").css("right", "0px");
+        cardDetails.find(".cardFooter").css("bottom", "0px");
+        $(card).find('.taskBoardCardColumn2').css("width", "70%");
+        $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important");
+        cardShadow.css("width", "15px");
+        cardDetails.css("width", "90%");
+        cardControls.css("cssText", "margin-right: 0px !important;");
+        cardControls.css("margin-left", "3px");
+        cardControls.css("float", "left");
+    }
+    if (settingScrolls) {
+        cardDetails.find(".title").css("overflow-y", "auto");
+    }
+    if (settingBuildNums) {
+        $(idBar).prepend("<div class='buildNumDiv' style='margin: 5px 0px 0 3px; float: left; font-weight: bold;'></div>");
+    }
+
 }
 
 function evaluateCardVer(card, labelVal) {
@@ -217,19 +275,25 @@ function fetchTaskInfo(card) {
     var jqxhr = $.post("/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum, { __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val() })
         .done(function () {
             var responseText = jQuery.parseJSON(jqxhr.responseText);
-            var verNum = responseText["__wrappedArray"][0]["fields"]["10046"];
-            if (verNum) {
-                $(card).attr("task-buildnum", verNum);
-            } else {
-                $(card).attr("task-buildnum", "");
+            if (settingBuildNums) {
+                var verNum = responseText["__wrappedArray"][0]["fields"]["10046"];
+                if (verNum) {
+                    $(card).attr("task-buildnum", verNum);
+                } else {
+                    $(card).attr("task-buildnum", "");
+                }
             }
 
-            // Fill in "Remaining Work" field for Bugs fix
-            if (responseText["__wrappedArray"][0]["fields"]["25"] == "Bug" && responseText["__wrappedArray"][0]["fields"]["10043"]) {
-                $(card).find('.taskBoardCardColumn3').text(responseText["__wrappedArray"][0]["fields"]["10043"] + " h");
+            if (settingBugHours) {
+                // Fill in "Remaining Work" field for Bugs fix
+                if (responseText["__wrappedArray"][0]["fields"]["25"] == "Bug" && responseText["__wrappedArray"][0]["fields"]["10043"]) {
+                    $(card).find('.taskBoardCardColumn3').text(responseText["__wrappedArray"][0]["fields"]["10043"] + " h");
+                }
             }
+
 
             processTags(card, responseText["__wrappedArray"][0]["fields"]["80"]);
+
             processAvatar(card, responseText["__wrappedArray"][0]["fields"]["24"]);
         })
         .fail(function () {
@@ -246,39 +310,59 @@ function initializeCard(card) {
 
 function processTags(card, tagsStr) {
     var cardFooter = $(card).find('.cardFooter .taskBoardCardColumn2');
-    $(cardFooter).text("");
+    if (settingDisplayTags) {
+        $(cardFooter).text("");
+    }
     if (tagsStr) {
         var tagsArr = tagsStr.split(";");
 
         for (var i = 0; i < tagsArr.length; i++) {
             var match = hexPtrn.exec(tagsArr[i]);
             if (!match) {
-                if (tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
+                if (settingTagIcons && tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
 
-                    $(card).find(".buildNumDiv").after("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 6px;cursor: move;'><img src='" + chrome.extension.getURL(tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
+                    $(card).find(".cardControls").first().before("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 3px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
 
-                } else {
+                } else if (settingDisplayTags) {
                     if ($(cardFooter).text() != "") {
                         $(cardFooter).text($(cardFooter).text() + ", ");
                     }
                     $(cardFooter).text($(cardFooter).text() + tagsArr[i]);
                 }
-            } else {
+            } else if (settingColors) {
                 $(card).find(".cardShadow").css("background-color", match[0]);
             }
         }
     }
-    $(cardFooter).attr("title", $(cardFooter).text());
+    if (settingDisplayTags) {
+        $(cardFooter).attr("title", $(cardFooter).text());
+    }
 }
 
 function processAvatar(card, assignedUserStr) {
     if (assignedUserStr) {
+
+
         var userID = assignedUserStr.substring(assignedUserStr.indexOf('<') + 1, assignedUserStr.indexOf('>'));
-        var avatarURL = "/tfs/MainProjects/_api/_common/IdentityImage?id=&identifier=" + userID;
-        $(card).css("background-image", "url(" + encodeURI(avatarURL) + ")");
-        $(card).css("background-size", "28px");
-        $(card).css("background-repeat", "no-repeat");
-        $(card).css("background-position", "top right");
+        if (settingDisplayAvatar) {
+            var avatarURL = "/tfs/MainProjects/_api/_common/IdentityImage?id=&identifier=" + userID;
+            $(card).css("background-image", "url(" + encodeURI(avatarURL) + ")");
+            $(card).css("background-size", "28px");
+            $(card).css("background-repeat", "no-repeat");
+            $(card).css("background-position", "top right");
+        }
+
+        if (settingNameStamp) {
+            //Stamp name
+            var idBar = $(card).find(".idBar");
+            idBar.append("<div class='nameStamp' style='font-weight: bold;float: right;position: absolute;color: #ff0000;box-shadow: inset 0px 0px 1px 1px #ff0000;padding: 3px;border-radius: 5px;transform: rotate(10deg);top: 6px;right: 3px;background-color: rgba(241, 0, 0, 0.09);text-transform: capitalize;'></div>");
+            var nameStamp = idBar.find(".nameStamp");
+            var match = fNamePtrn.exec(userID);
+            if (match && match[1]) {
+                nameStamp.text(match[1]);
+            }
+        }
+
     }
 }
 
@@ -312,5 +396,36 @@ function rteOverride() {
             });
             $(this).attr("listenerAdded", "true");
         }
+    });
+}
+
+function loadSettings() {
+    chrome.storage.sync.get({
+        sColors: "true",
+        sBuildNums: "true",
+        sIcons: "true",
+        sTags: "true",
+        sOwner: "avatar",
+        sBugHours: "true",
+        sScrolls: "true",
+        sCosmetics: "true",
+        sRTE: "true",
+        sTitle: "true"
+    }, function (items) {
+        settingColors = items.sColors;
+        settingBuildNums = items.sBuildNums;
+        settingTagIcons = items.sIcons;
+        settingDisplayTags = items.sTags;
+        if (items.sOwner == "avatar") {
+            settingDisplayAvatar = true;
+        } else if (items.sOwner == "name") {
+            settingNameStamp = true;
+        }
+        settingBugHours = items.sBugHours;
+        settingScrolls = items.sScrolls;
+        settingCosmetics = items.sCosmetics;
+        settingRTECommands = items.sRTE;
+        settingFixTitle = items.sTitle;
+        settingsLoaded = true;
     });
 }

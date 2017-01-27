@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TFS Card Mod Settings</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="scripts/jquery-2.1.4.min.js"></script>
+  <script src="scripts/options.js"></script>
+  <style>
+  body{
+    background-color: #525252;
+}
+.centered-form{
+	margin-top: 60px;
+}
+
+.centered-form .panel{
+	background: rgba(255, 255, 255, 0.8);
+	box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
+}</style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row centered-form">
+      <div class="col-xs-12 col-sm-8 col-md-4 col-sm-offset-2 col-md-offset-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">TFS Card Mod Settings</h3>
+          </div>
+          <div class="panel-body">
+            <form role="form">
+
+
+              <label>
+<input type="checkbox" id="cbColors"/>
+Enable Custom Task Colours
+</label>
+              <br/>
+              <label>
+<input type="checkbox" id="cbBuildNums"/>
+Enable Build Number Functionality
+</label>
+              <br/>
+              <label>
+
+<input type="checkbox" id="cbIcons"/>
+Enable Tag Icons
+</label>
+              <br/>
+              <label>
+
+<input type="checkbox" id="cbTags"/>
+Display Tags on Card
+</label>
+
+
+
+              <br/>
+              <label>
+<input type="checkbox" id="cbBugHours"/>
+Display Remaining Work for Bugs
+</label>
+              <br/>
+              <label>
+
+<input type="checkbox" id="cbScrolls"/>
+Enable Scrolling on Task Cards
+</label>
+              <br/>
+              <label>
+<input type="checkbox" id="cbCosmetics"/>
+Enable General Cosmetic Tweaks
+</label>
+              <br/>
+              <label>
+
+<input type="checkbox" id="cbRTE"/>
+Enable Custom RTE Commands
+</label>
+              <br/>
+              <label>
+
+<input type="checkbox" id="cbTitle"/>
+Set Window Title to Project Name
+</label>
+              <br/>
+              <label>Display Owner on Card:
+    <select id="ddlOwner">
+ <option value="disabled">Disabled</option>
+ <option value="avatar">Avatar</option>
+ <option value="name">Name</option>
+</select>
+</label>
+              <br/>
+
+            </form>
+          </div>
+
+          <div class="tpbutton btn-toolbar text-center">
+            <a id="save" class="btn navbar-btn btn-primary" href="#" target="_texturepack" style="float:none">Save</a>
+<a id="reset" class="btn navbar-btn btn-default" href="#" target="_texturepack" style="float:none">Reset</a>
+<div id="status"></div>
+<br/>
+</div>
+
+
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>

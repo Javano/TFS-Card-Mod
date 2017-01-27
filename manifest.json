@@ -1,8 +1,9 @@
 {
 	"manifest_version": 2,
 	"name": "TFS Card Mod",
-	"version": "1.4",
-	"description": "Productivity enhancement mod for itracks Go and BBFG Boards in TFS.",
+	"version": "1.5",
+	"description": "Productivity enhancement mod for itracks Go and BBFG Boards in TFS.",  
+	"options_page": "options.html",
 	"icons": {
 		"16": "icons/logo16.png",
 		"38": "icons/logo38.png",
@@ -13,8 +14,10 @@
 		"https://go.itracks.com/",
 		"http://go.itracks.com/",
 		"https://bbfg.itracks.com/*",
-		"http://bbfg.itracks.com/*"
+		"http://bbfg.itracks.com/*",
+		"storage"
 	],
+	
 	"content_scripts": [
 		{
 			"matches": [
@@ -25,7 +28,10 @@
 			],
 			"js": [
 				"scripts/jquery-2.1.4.min.js",
-				"scripts/content.js"
+				"scripts/content.js",
+				"bootstrap/js/bootstrap.js",
+				"bootstrap/js/bootstrap.min.js",
+				"bootstrap/js/npm.js"
 			],
 			"run_at": "document_end"
 		}
