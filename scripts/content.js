@@ -374,20 +374,20 @@ function rteOverride() {
                     case (9):
                         if (e.shiftKey) {
                             e.preventDefault();
-                            $('.richeditor-toolbar-outdent').click();
+                            $('div.tab-page[aria-expanded="true"] .richeditor-toolbar-outdent').click();
                         } else {
                             e.preventDefault();
-                            $('.richeditor-toolbar-indent').click();
+                            $('div.tab-page[aria-expanded="true"] .richeditor-toolbar-indent').click();
                         }
                         break;
                     case (56):
                         if (e.ctrlKey) {
                             if (e.shiftKey) {
                                 e.preventDefault();
-                                $('.richeditor-toolbar-insertorderedlist').click();
+                                $('div.tab-page[aria-expanded="true"] .richeditor-toolbar-insertorderedlist').click();
                             } else {
                                 e.preventDefault();
-                                $('.richeditor-toolbar-insertunorderedlist').click();
+                                $('div.tab-page[aria-expanded="true"] .richeditor-toolbar-insertunorderedlist').click();
                             }
                         }
                         break;
