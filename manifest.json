@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "TFS Card Mod",
-	"version": "1.5.1",
+	"version": "1.6.2",
 	"description": "Productivity enhancement mod for itracks Go and BBFG Boards in TFS.",  
 	"options_page": "options.html",
 	"icons": {
