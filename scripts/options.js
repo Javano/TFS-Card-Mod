@@ -4,7 +4,7 @@
 // Saves options to chrome.storage
 function save_options() {
   var colors = document.getElementById('cbColors').checked;
-  var buildNums = document.getElementById('cbBuildNums').checked;
+  var buildNums = document.getElementById('ddlBuildNums').value;
   var icons = document.getElementById('cbIcons').checked;
   var tags = document.getElementById('cbTags').checked;
   var owner = document.getElementById('ddlOwner').value;
@@ -40,7 +40,7 @@ function restore_options() {
   // Use default value color = 'red' and likesColor = true.
   chrome.storage.sync.get({
     sColors: "true",
-    sBuildNums: "true",
+    sBuildNums: "both",
     sIcons: "true",
     sTags: "true",
     sOwner: "avatar",
@@ -51,7 +51,7 @@ function restore_options() {
     sTitle: "true"
   }, function (items) {
     document.getElementById('cbColors').checked = items.sColors;
-    document.getElementById('cbBuildNums').checked = items.sBuildNums;
+    document.getElementById('ddlBuildNums').value = items.sBuildNums;
     document.getElementById('cbIcons').checked = items.sIcons;
     document.getElementById('cbTags').checked = items.sTags;
     document.getElementById('ddlOwner').value = items.sOwner;

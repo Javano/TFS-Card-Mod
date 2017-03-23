@@ -21,6 +21,10 @@ var tagIconDict = {
     ANDROID: "icons/android.png",
     IOS: "icons/ios.png",
     IE: "icons/ie.png",
+    IE9: "icons/ie.png",
+    IE10: "icons/ie.png",
+    IE11: "icons/ie.png",
+    IE12: "icons/ie.png",
     FIREFOX: "icons/firefox.png",
     CHROME: "icons/chrome.png",
     SAFARI: "icons/safari.png",
@@ -31,6 +35,8 @@ var tagIconDict = {
 
 var settingColors = false;
 var settingBuildNums = false;
+var settingBuildNums_BBFG = false;
+var settingBuildNums_GO = false;
 var settingTagIcons = false;
 var settingDisplayTags = false;
 var settingNameStamp = false;
@@ -71,6 +77,8 @@ function run() {
     if (settingFixTitle) {
         document.title = $(".menu-bar li span").first().text();
     }
+    //Fixes the close/maximize icons overlapping in the task view
+  //  $('head').append('<style type="text/css">.ui-dialog .ui-dialog-titlebar-close{right: 0 !important;} .ui-corner-all{right: 65px !important;} </style>');
 
 
     if (settingBuildNums) {
@@ -88,10 +96,18 @@ function run() {
 
         if (settingBuildNums) {
             if (goVersion) {
-                $("#goVerNum").html(goVersion);
+                if (goVersion != "ERROR") {
+                    $("#goVerNum").html(goVersion);
+                } else {
+                    $("#goVerNum").html("<span style='color:#FF0000;text-weight:bold;'>ERROR</span>");
+                }
             }
             if (bbfgVersion) {
-                $("#bbfgVerNum").html(bbfgVersion);
+                if (bbfgVersion != "ERROR") {
+                    $("#bbfgVerNum").html(bbfgVersion);
+                } else {
+                    $("#bbfgVerNum").html("<span style='color:#FF0000;text-weight:bold;'>ERROR</span>");
+                }
             }
         }
         var newCards = [];
@@ -123,48 +139,79 @@ function run() {
         if (settingBuildNums) {
             //Update pre-existing cards
             $('.card[task-buildnum][task-buildnum!="pending"]').each(function (i, obj) {
-                evaluateCardVer(this, $(this).attr("task-buildnum"));
+                evaluateCardVer(this, $(this).attr("task-buildnum").trim());
             });
         }
     }, 100);
 }
 
 function setupPage() {
-    $("#header-row").append('<span class="slash">/</span><span> BBFG Version: </span><span id="bbfgVerNum"><img class="load-spinner" id="bbfgVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
-    $("#header-row").css("color", "#FFF");
-    $("#bbfgVerNum").css("font-weight", "700");
-    $("#header-row").append('<span class="slash">-</span><span> GO Version: </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
-    $("#header-row").css("color", "#FFF");
-    $("#goVerNum").css("font-weight", "700");
+    if (settingBuildNums_BBFG) {
+        $("#header-row").append('<span class="slash">/</span><span> BBFG Version: </span><span id="bbfgVerNum"><img class="load-spinner" id="bbfgVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
+        $("#header-row").css("color", "#FFF");
+        $("#bbfgVerNum").css("font-weight", "700");
+    }
+    if (settingBuildNums_GO) {
+        $("#header-row").append('<span class="slash">-</span><span> GO Version: </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
+        $("#header-row").css("color", "#FFF");
+        $("#goVerNum").css("font-weight", "700");
+    }
 }
 
 function updateVerNumbers() {
-    var bbfgxmlhttp = new XMLHttpRequest();
-    bbfgxmlhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == "200") {
-            var page1 = document.implementation.createHTMLDocument("");
-            page1.documentElement.innerHTML = this.responseText;
-            bbfgVersion = page1.querySelector('#M_M_M_M_B_B_B_Body_lblVersion').textContent.trim();
-            bbfgVersionInt = parseInt(bbfgVersion.replace(/\./g, ""));
+    if (settingBuildNums_BBFG) {
+        var bbfgxmlhttp = new XMLHttpRequest();
+        bbfgxmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == "200") {
+                try {
+                    var page1 = document.implementation.createHTMLDocument("");
+                    page1.documentElement.innerHTML = this.responseText;
+                    bbfgVersion = page1.querySelector('#M_M_M_M_B_B_B_Body_lblVersion').textContent.trim();
+                    bbfgVersionInt = parseInt(bbfgVersion.replace(/\./g, ""));
+                } catch (err) {
+                    console.log("Error fetching BBFG version.\n[See Options menu to disable BBFG version checking: chrome-extension://olfpjmbnimcoagkbkbnchlkcmloagdkd/options.html]");
+                    console.log(err);
+                    if (bbfgVersion == "") {
+                        bbfgVersion = "ERROR";
+                    }
+                }
+            }
+        };
+
+        try {
+            bbfgxmlhttp.open("GET", bbfgURL, true);
+            bbfgxmlhttp.send();
+        } catch (err) {
+            console.log("Error sending HTTP request (BBFG is rolling?)");
         }
-    };
-    bbfgxmlhttp.open("GET", bbfgURL, true);
-    bbfgxmlhttp.send();
+    }
+    if (settingBuildNums_GO) {
+        var goxmlhttp = new XMLHttpRequest();
+        goxmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == "200") {
+                try {
+                    var page2 = document.implementation.createHTMLDocument("");
+                    page2.documentElement.innerHTML = this.responseText;
+                    goVersion = page2.querySelector('#M_B_PC_lblVersion').textContent.trim();
+                    goVersionInt = parseInt(goVersion.replace(/\./g, ""));
+                } catch (err) {
+                    console.log("Error fetching Go version.\n[See Options menu to disable Go version checking: chrome-extension://olfpjmbnimcoagkbkbnchlkcmloagdkd/options.html]");
+                    console.log(err);
+                    if (goVersion == "") {
+                        goVersion = "ERROR";
+                    }
+                }
+            }
+        };
 
-    var goxmlhttp = new XMLHttpRequest();
-    goxmlhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == "200") {
-            var page2 = document.implementation.createHTMLDocument("");
-            page2.documentElement.innerHTML = this.responseText;
-            goVersion = page2.querySelector('#M_B_PC_lblVersion').textContent.trim();
-            goVersionInt = parseInt(goVersion.replace(/\./g, ""));
+        goxmlhttp.open("GET", goURL, true);
+        try {
+            goxmlhttp.send();
+        } catch (err) {
+            console.log("Error sending HTTP request (Go is rolling?)");
         }
-    };
 
-    goxmlhttp.open("GET", goURL, true);
-    goxmlhttp.send();
-
-
+    }
 
 }
 
@@ -175,6 +222,7 @@ function formatCard(card) {
     var idBar = $(cardDetails).find(".idBar");
     var cardControls = $(idBar).find(".cardControls");
     var taskNum = $(cardID).find('a').text();
+
 
     if (settingCosmetics) {
         $(cardShadow).prepend($(cardID)[0].outerHTML);
@@ -208,6 +256,9 @@ function formatCard(card) {
         $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important");
         cardShadow.css("width", "15px");
         cardDetails.css("width", "90%");
+
+    }
+    if (settingCosmetics || settingNameStamp || settingDisplayAvatar) {
         cardControls.css("cssText", "margin-right: 0px !important;");
         cardControls.css("margin-left", "3px");
         cardControls.css("float", "left");
@@ -238,27 +289,39 @@ function evaluateCardVer(card, labelVal) {
     } else if (match) {
         //Build number found.
         labelValInt = parseInt(match[0].replace(/\./g, ""));
-        if (match[1] == '1' && goVersion != "") {
-            //This is a GO Version Number
-            if (labelValInt > goVersionInt) {
-                $(card).css('opacity', '0.6');
-                $(card).css('border', '1px solid #d6d6d6');
+        if (match[1] == '1' || match[1] == '2') {
+            if (settingBuildNums_GO) {
+                if (goVersion != "") {
+                    //This is a GO Version Number
+                    if (labelValInt > goVersionInt) {
+                        $(card).css('opacity', '0.6');
+                        $(card).css('border', '1px solid #d6d6d6');
+                    } else {
+                        $(card).css('opacity', $(card).attr('opac'));
+                        $(card).css('border', '1px outset  #d6d6d6');
+                    }
+                }
             } else {
-                $(card).css('opacity', $(card).attr('opac'));
-                $(card).css('border', '1px outset  #d6d6d6');
+                $(card).css('opacity', '1');
             }
-            $(card).find('.load-spinner').remove();
-        } else if (match[1] == '4' && bbfgVersion != "") {
-            //This is a BBFG Version Number
-            if (labelValInt > bbfgVersionInt) {
-                $(card).css('opacity', '0.6');
-                $(card).css('border', '1px solid #d6d6d6');
-            } else {
-                $(card).css('opacity', $(card).attr('opac'));
-                $(card).css('border', '1px outset  #d6d6d6');
-            }
-            $(card).find('.load-spinner').remove();
         }
+        if (match[1] == '4') {
+            if (settingBuildNums_BBFG) {
+                if (bbfgVersion != "") {
+                    //This is a BBFG Version Number
+                    if (labelValInt > bbfgVersionInt) {
+                        $(card).css('opacity', '0.6');
+                        $(card).css('border', '1px solid #d6d6d6');
+                    } else {
+                        $(card).css('opacity', $(card).attr('opac'));
+                        $(card).css('border', '1px outset  #d6d6d6');
+                    }
+                }
+            } else {
+                $(card).css('opacity', '1');
+            }
+        }
+        $(card).find('.load-spinner').remove();
     }
     if (labelVal) {
         $(buildNumDiv).text("[" + labelVal + "]");
@@ -355,11 +418,22 @@ function processAvatar(card, assignedUserStr) {
         if (settingNameStamp) {
             //Stamp name
             var idBar = $(card).find(".idBar");
-            idBar.append("<div class='nameStamp' style='font-weight: bold;float: right;position: absolute;color: #ff0000;box-shadow: inset 0px 0px 1px 1px #ff0000;padding: 3px;border-radius: 5px;transform: rotate(10deg);top: 6px;right: 3px;background-color: rgba(241, 0, 0, 0.09);text-transform: capitalize;'></div>");
+            idBar.append("<div class='nameStamp' style='font-weight: bold;float: right;position: absolute;padding: 3px;border-radius: 5px;transform: rotate(10deg);top: 6px;right: 3px;text-transform: capitalize;'></div>");
             var nameStamp = idBar.find(".nameStamp");
             var match = fNamePtrn.exec(userID);
             if (match && match[1]) {
-                nameStamp.text(match[1]);
+                if (match[1] == "for") {
+                    nameStamp.css("color", "#3d39ff");
+                    nameStamp.css("box-shadow", "inset 0px 0px 1px 1px #3d39ff");
+                    nameStamp.css("background-color", "rgba(0, 0, 241, 0.09)");
+                    nameStamp.text("For Review");
+                } else {
+
+                    nameStamp.css("color", "#ff0000");
+                    nameStamp.css("box-shadow", "inset 0px 0px 1px 1px #ff0000");
+                    nameStamp.css("background-color", "rgba(241, 0, 0, 0.09)");
+                    nameStamp.text(match[1]);
+                }
             }
         }
 
@@ -402,7 +476,7 @@ function rteOverride() {
 function loadSettings() {
     chrome.storage.sync.get({
         sColors: "true",
-        sBuildNums: "true",
+        sBuildNums: "both",
         sIcons: "true",
         sTags: "true",
         sOwner: "avatar",
@@ -413,7 +487,31 @@ function loadSettings() {
         sTitle: "true"
     }, function (items) {
         settingColors = items.sColors;
-        settingBuildNums = items.sBuildNums;
+
+
+
+        switch (items.sBuildNums) {
+            case ("both"):
+                settingBuildNums = true;
+                settingBuildNums_BBFG = true;
+                settingBuildNums_GO = true;
+                break;
+            case ("go"):
+                settingBuildNums = true;
+                settingBuildNums_BBFG = false;
+                settingBuildNums_GO = true;
+                break;
+            case ("bbfg"):
+                settingBuildNums = true;
+                settingBuildNums_BBFG = true;
+                settingBuildNums_GO = false;
+                break;
+            default:
+                settingBuildNums = false;
+                settingBuildNums_GO = false;
+                settingBuildNums_BBFG = false;
+                break;
+        }
         settingTagIcons = items.sIcons;
         settingDisplayTags = items.sTags;
         if (items.sOwner == "avatar") {
