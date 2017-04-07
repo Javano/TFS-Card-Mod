@@ -13,6 +13,8 @@ function save_options() {
   var cosmetics = document.getElementById('cbCosmetics').checked;
   var RTE = document.getElementById('cbRTE').checked;
   var title = document.getElementById('cbTitle').checked;
+  var showMissingWork = document.getElementById('cbShowMissingWork').checked;
+  var colTotals = document.getElementById('cbColTotals').checked;
   chrome.storage.sync.set({
     sColors: colors,
     sBuildNums: buildNums,
@@ -23,7 +25,9 @@ function save_options() {
     sScrolls: scrolls,
     sCosmetics: cosmetics,
     sRTE: RTE,
-    sTitle: title
+    sTitle: title,
+    sShowMissingWork: showMissingWork,
+    sColTotals: colTotals
   }, function () {
     // Update status to let user know options were saved.
     var status = document.getElementById('status');
@@ -40,7 +44,7 @@ function restore_options() {
   // Use default value color = 'red' and likesColor = true.
   chrome.storage.sync.get({
     sColors: "true",
-    sBuildNums: "both",
+    sBuildNums: "go",
     sIcons: "true",
     sTags: "true",
     sOwner: "avatar",
@@ -48,10 +52,18 @@ function restore_options() {
     sScrolls: "true",
     sCosmetics: "true",
     sRTE: "true",
-    sTitle: "true"
+    sTitle: "true",
+    sShowMissingWork: "true",
+    sColTotals: "true"
+
   }, function (items) {
     document.getElementById('cbColors').checked = items.sColors;
+
+    if(items.sBuildNums != "disabled" && items.sBuildNums != "go"){
+    document.getElementById('ddlBuildNums').value = "go";
+    } else {
     document.getElementById('ddlBuildNums').value = items.sBuildNums;
+    }
     document.getElementById('cbIcons').checked = items.sIcons;
     document.getElementById('cbTags').checked = items.sTags;
     document.getElementById('ddlOwner').value = items.sOwner;
@@ -60,6 +72,8 @@ function restore_options() {
     document.getElementById('cbCosmetics').checked = items.sCosmetics;
     document.getElementById('cbRTE').checked = items.sRTE;
     document.getElementById('cbTitle').checked = items.sTitle;
+    document.getElementById('cbShowMissingWork').checked = items.sShowMissingWork;
+    document.getElementById('cbColTotals').checked = items.sColTotals;
   });
 }
 

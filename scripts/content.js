@@ -1,6 +1,3 @@
-
-
-
 var bbfgURL = "https://bbfg.itracks.com/BBFG4/en-us/login.aspx";
 var goURL = "https:/go.itracks.com/GO/en-US/Login.aspx";
 var goVersion = "";
@@ -29,10 +26,7 @@ var tagIconDict = {
     CHROME: "icons/chrome.png",
     SAFARI: "icons/safari.png",
     EDGE: "icons/edge.png"
-
 };
-
-
 var settingColors = false;
 var settingBuildNums = false;
 var settingBuildNums_BBFG = false;
@@ -47,16 +41,11 @@ var settingCosmetics = false;
 var settingRTECommands = false;
 var settingFixTitle = false;
 var settingsLoaded = false;
-
-
-
-
-$(document).ready(function () {
-
+var settingsSumHours = false;
+var settingShowMissingWork = false;
+$(document).ready(function() {
     loadSettings();
-
     checkIfReady();
-
 });
 
 function checkIfReady() {
@@ -69,7 +58,7 @@ function checkIfReady() {
 
 function run() {
     if (settingCosmetics) {
-        $('head').append('<style type="text/css"> .card { border-radius:10px;     box-shadow: 0px 1px 1px #aaaaaa; } .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
+        $('head').append('<style type="text/css"> .card { border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
     }
     if (settingScrolls) {
         $('head').append('<style type="text/css"> ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
@@ -78,22 +67,18 @@ function run() {
         document.title = $(".menu-bar li span").first().text();
     }
     //Fixes the close/maximize icons overlapping in the task view
-  //  $('head').append('<style type="text/css">.ui-dialog .ui-dialog-titlebar-close{right: 0 !important;} .ui-corner-all{right: 65px !important;} </style>');
-
-
+    //  $('head').append('<style type="text/css">.ui-dialog .ui-dialog-titlebar-close{right: 0 !important;} .ui-corner-all{right: 65px !important;} </style>');
     if (settingBuildNums) {
         setupPage();
-        setInterval(function () {
+        setInterval(function() {
             updateVerNumbers();
         }, 10 * 1000);
     }
-    setInterval(function () {
-
+    setInterval(function() {
         if (settingRTECommands) {
             //Custom commands override hook for RTE
             rteOverride();
         }
-
         if (settingBuildNums) {
             if (goVersion) {
                 if (goVersion != "ERROR") {
@@ -111,35 +96,44 @@ function run() {
             }
         }
         var newCards = [];
-
         //Find unprocessed cards and style them
-        $('.card:not([task-buildnum])').each(function (i, obj) {
+        $('.card:not([task-buildnum])').each(function(i, obj) {
             if (settingBuildNums) {
                 initializeCard(this);
             }
             newCards.push($(this));
-
         });
-
         //Loop through all new cards
-        $(newCards).each(function (i, obj) {
+        $(newCards).each(function(i, obj) {
             var card = newCards[i];
             $(card).attr("task-buildnum", "pending");
-
             //Modify cosmetics
             formatCard(card);
-
-
             //Fetch and display task details
             fetchTaskInfo(card);
             //Card has been processed. Remove from "New Cards" array.
             $(newCards).remove(card);
         });
-
         if (settingBuildNums) {
             //Update pre-existing cards
-            $('.card[task-buildnum][task-buildnum!="pending"]').each(function (i, obj) {
+            $('.card[task-buildnum][task-buildnum!="pending"]').each(function(i, obj) {
                 evaluateCardVer(this, $(this).attr("task-buildnum").trim());
+            });
+        }
+        if (settingSumHours) {
+            $(".columnHeader").each(function() {
+                var columnType = $(this).attr("data-columntype");
+                var totalCount = 0;
+                $('[data-columntype="' + columnType + '"] .card').each(function() {
+                    var countStr = $(this).find(".taskBoardCardColumn3").text().replace("h", "").trim();
+                    if (countStr >= 0) {
+                        totalCount += parseFloat(countStr);
+                    }
+                });
+                if ($(this).find(".itemCountSum").length < 1) {
+                    $(this).find(".itemCount").append("<span class='itemCountSum' style='background:none; padding-left:0px;'></span>");
+                }
+                $(this).find(".itemCountSum").text(" (" + totalCount + "h)");
             });
         }
     }, 100);
@@ -161,7 +155,7 @@ function setupPage() {
 function updateVerNumbers() {
     if (settingBuildNums_BBFG) {
         var bbfgxmlhttp = new XMLHttpRequest();
-        bbfgxmlhttp.onreadystatechange = function () {
+        bbfgxmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == "200") {
                 try {
                     var page1 = document.implementation.createHTMLDocument("");
@@ -177,7 +171,6 @@ function updateVerNumbers() {
                 }
             }
         };
-
         try {
             bbfgxmlhttp.open("GET", bbfgURL, true);
             bbfgxmlhttp.send();
@@ -187,7 +180,7 @@ function updateVerNumbers() {
     }
     if (settingBuildNums_GO) {
         var goxmlhttp = new XMLHttpRequest();
-        goxmlhttp.onreadystatechange = function () {
+        goxmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == "200") {
                 try {
                     var page2 = document.implementation.createHTMLDocument("");
@@ -203,16 +196,13 @@ function updateVerNumbers() {
                 }
             }
         };
-
         goxmlhttp.open("GET", goURL, true);
         try {
             goxmlhttp.send();
         } catch (err) {
             console.log("Error sending HTTP request (Go is rolling?)");
         }
-
     }
-
 }
 
 function formatCard(card) {
@@ -222,18 +212,15 @@ function formatCard(card) {
     var idBar = $(cardDetails).find(".idBar");
     var cardControls = $(idBar).find(".cardControls");
     var taskNum = $(cardID).find('a').text();
-
-
     if (settingCosmetics) {
         $(cardShadow).prepend($(cardID)[0].outerHTML);
         $(cardID).remove();
         var newCardID = $(cardShadow).find(".cardId");
         newCardID.css("width", "7px");
         newCardID.css("word-wrap", "break-word");
-        newCardID.css("margin", "0px");
+        newCardID.css("margin", "2px 0px 0px 3px");
         newCardID.css("text-align", "center");
         newCardID.css("position", "relative");
-        newCardID.css("left", "3px");
         newCardID.find("a").css("text-decoration", "none");
         newCardID.find("a").css("outline", "none");
         newCardID.find("a").css("color", "#000000");
@@ -247,29 +234,34 @@ function formatCard(card) {
         cardDetails.find(".title").css("width", "auto");
         cardDetails.find(".title").css("left", "12px");
         cardDetails.find(".title").css("right", "2px");
+        cardDetails.find(".title").css("margin-left", "5px");
         cardDetails.find(".cardFooter").css("position", "absolute");
         cardDetails.find(".cardFooter").css("width", "auto");
         cardDetails.find(".cardFooter").css("left", "15px");
         cardDetails.find(".cardFooter").css("right", "0px");
         cardDetails.find(".cardFooter").css("bottom", "0px");
         $(card).find('.taskBoardCardColumn2').css("width", "70%");
+        $(card).find('.taskBoardCardColumn2').css("margin-left", "2px");
         $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important");
-        cardShadow.css("width", "15px");
+        cardShadow.css("width", "13px");
+        cardShadow.css("height", "92px");
+        cardShadow.css("border-top-left-radius", "5px");
+        cardShadow.css("border-bottom-left-radius", "5px");
+        cardShadow.find("img").hide();
         cardDetails.css("width", "90%");
-
+        cardDetails.css("padding-left", "1px");
     }
     if (settingCosmetics || settingNameStamp || settingDisplayAvatar) {
         cardControls.css("cssText", "margin-right: 0px !important;");
-        cardControls.css("margin-left", "3px");
+        cardControls.css("margin-left", "1px");
         cardControls.css("float", "left");
     }
     if (settingScrolls) {
         cardDetails.find(".title").css("overflow-y", "auto");
     }
     if (settingBuildNums) {
-        $(idBar).prepend("<div class='buildNumDiv' style='margin: 5px 0px 0 3px; float: left; font-weight: bold;'></div>");
+        $(idBar).prepend("<div class='buildNumDiv' style='margin: 5px 2px 0 1px; float: left; font-weight: bold;'></div>");
     }
-
 }
 
 function evaluateCardVer(card, labelVal) {
@@ -335,33 +327,43 @@ function evaluateCardVer(card, labelVal) {
 function fetchTaskInfo(card) {
     var cardShadow = $(card).find(".cardShadow");
     var taskNum = $(card).find(".cardId").find('a').text();
-    var jqxhr = $.post("/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum, { __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val() })
-        .done(function () {
-            var responseText = jQuery.parseJSON(jqxhr.responseText);
-            if (settingBuildNums) {
-                var verNum = responseText["__wrappedArray"][0]["fields"]["10046"];
-                if (verNum) {
-                    $(card).attr("task-buildnum", verNum);
-                } else {
-                    $(card).attr("task-buildnum", "");
-                }
+    var jqxhr = $.post("/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum, {
+        __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
+    }).done(function() {
+        var responseText = jQuery.parseJSON(jqxhr.responseText);
+        if (settingBuildNums) {
+            var verNum = responseText["__wrappedArray"][0]["fields"]["10046"];
+            if (verNum) {
+                $(card).attr("task-buildnum", verNum);
+            } else {
+                $(card).attr("task-buildnum", "");
             }
-
-            if (settingBugHours) {
-                // Fill in "Remaining Work" field for Bugs fix
-                if (responseText["__wrappedArray"][0]["fields"]["25"] == "Bug" && responseText["__wrappedArray"][0]["fields"]["10043"]) {
-                    $(card).find('.taskBoardCardColumn3').text(responseText["__wrappedArray"][0]["fields"]["10043"] + " h");
-                }
+        }
+        if (settingBugHours) {
+            // Fill in "Remaining Work" field for Bugs fix
+            if (responseText["__wrappedArray"][0]["fields"]["25"] == "Bug" && responseText["__wrappedArray"][0]["fields"]["10043"]) {
+                $(card).find('.taskBoardCardColumn3').text(responseText["__wrappedArray"][0]["fields"]["10043"] + " h");
             }
-
-
-            processTags(card, responseText["__wrappedArray"][0]["fields"]["80"]);
-
-            processAvatar(card, responseText["__wrappedArray"][0]["fields"]["24"]);
-        })
-        .fail(function () {
-            console.log("ERROR FETCHING DATA FOR TASK " + taskNum + " -- URI: " + "http://tfs:8080/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum)
-        })
+            $(card).find('.taskBoardCardColumn3').attr("title", "Remaining Work");
+            $(card).find('.taskBoardCardColumn3').attr("data-referencename", "Microsoft.VSTS.Scheduling.RemainingWork");
+        }
+        if (settingShowMissingWork) {
+            var columnType = $(card).closest(".column").attr("data-columntype");
+            if (responseText["__wrappedArray"][0]["fields"]["10114"] || columnType == "To Do" || columnType == "In Progress" || columnType == "Done") {
+                $(card).css("box-shadow", "");
+                $(card).attr("title", "");
+                $(card).find(".title").attr("title", $(card).find(".title").text());
+            } else {
+                $(card).attr("title", "ERROR: Missing 'Actual Work' value.");
+                $(card).find(".title").attr("title", "ERROR: Missing 'Actual Work' value.");
+                $(card).css("box-shadow", "0px 0px 5px 2px #ff0000", "important");
+            }
+        }
+        processTags(card, responseText["__wrappedArray"][0]["fields"]["80"]);
+        processAvatar(card, responseText["__wrappedArray"][0]["fields"]["24"]);
+    }).fail(function() {
+        console.log("ERROR FETCHING DATA FOR TASK " + taskNum + " -- URI: " + "http://tfs:8080/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum)
+    })
 }
 
 function initializeCard(card) {
@@ -378,14 +380,11 @@ function processTags(card, tagsStr) {
     }
     if (tagsStr) {
         var tagsArr = tagsStr.split(";");
-
         for (var i = 0; i < tagsArr.length; i++) {
             var match = hexPtrn.exec(tagsArr[i]);
             if (!match) {
                 if (settingTagIcons && tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
-
-                    $(card).find(".cardControls").first().before("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 3px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
-
+                    $(card).find(".cardControls").first().before("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 1px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
                 } else if (settingDisplayTags) {
                     if ($(cardFooter).text() != "") {
                         $(cardFooter).text($(cardFooter).text() + ", ");
@@ -404,8 +403,6 @@ function processTags(card, tagsStr) {
 
 function processAvatar(card, assignedUserStr) {
     if (assignedUserStr) {
-
-
         var userID = assignedUserStr.substring(assignedUserStr.indexOf('<') + 1, assignedUserStr.indexOf('>'));
         if (settingDisplayAvatar) {
             var avatarURL = "/tfs/MainProjects/_api/_common/IdentityImage?id=&identifier=" + userID;
@@ -414,7 +411,6 @@ function processAvatar(card, assignedUserStr) {
             $(card).css("background-repeat", "no-repeat");
             $(card).css("background-position", "top right");
         }
-
         if (settingNameStamp) {
             //Stamp name
             var idBar = $(card).find(".idBar");
@@ -428,7 +424,6 @@ function processAvatar(card, assignedUserStr) {
                     nameStamp.css("background-color", "rgba(0, 0, 241, 0.09)");
                     nameStamp.text("For Review");
                 } else {
-
                     nameStamp.css("color", "#ff0000");
                     nameStamp.css("box-shadow", "inset 0px 0px 1px 1px #ff0000");
                     nameStamp.css("background-color", "rgba(241, 0, 0, 0.09)");
@@ -436,14 +431,13 @@ function processAvatar(card, assignedUserStr) {
                 }
             }
         }
-
     }
 }
 
 function rteOverride() {
-    $('.richeditor-editarea iframe:not([listenerAdded])').each(function (i, obj) {
+    $('.richeditor-editarea iframe:not([listenerAdded])').each(function(i, obj) {
         if (obj.contentWindow.document.body) {
-            obj.contentWindow.document.body.addEventListener('keydown', function (e) {
+            obj.contentWindow.document.body.addEventListener('keydown', function(e) {
                 switch (e.which) {
                     case (9):
                         if (e.shiftKey) {
@@ -466,7 +460,6 @@ function rteOverride() {
                         }
                         break;
                 }
-
             });
             $(this).attr("listenerAdded", "true");
         }
@@ -476,7 +469,7 @@ function rteOverride() {
 function loadSettings() {
     chrome.storage.sync.get({
         sColors: "true",
-        sBuildNums: "both",
+        sBuildNums: "go",
         sIcons: "true",
         sTags: "true",
         sOwner: "avatar",
@@ -484,12 +477,11 @@ function loadSettings() {
         sScrolls: "true",
         sCosmetics: "true",
         sRTE: "true",
-        sTitle: "true"
-    }, function (items) {
+        sTitle: "true",
+        sShowMissingWork: "true",
+        sColTotals: "true"
+    }, function(items) {
         settingColors = items.sColors;
-
-
-
         switch (items.sBuildNums) {
             case ("both"):
                 settingBuildNums = true;
@@ -524,6 +516,8 @@ function loadSettings() {
         settingCosmetics = items.sCosmetics;
         settingRTECommands = items.sRTE;
         settingFixTitle = items.sTitle;
+        settingShowMissingWork = items.sShowMissingWork;
+        settingSumHours = items.sColTotals;
         settingsLoaded = true;
     });
 }
