@@ -43,7 +43,12 @@ var settingFixTitle = false;
 var settingsLoaded = false;
 var settingsSumHours = false;
 var settingShowMissingWork = false;
-$(document).ready(function() {
+var settingBreakdownHours = false;
+
+
+
+
+$(document).ready(function () {
     loadSettings();
     checkIfReady();
 });
@@ -58,7 +63,7 @@ function checkIfReady() {
 
 function run() {
     if (settingCosmetics) {
-        $('head').append('<style type="text/css"> .card { border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
+        $('head').append('<style type="text/css"> .card { border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important; width: 99% !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
     }
     if (settingScrolls) {
         $('head').append('<style type="text/css"> ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
@@ -70,11 +75,11 @@ function run() {
     //  $('head').append('<style type="text/css">.ui-dialog .ui-dialog-titlebar-close{right: 0 !important;} .ui-corner-all{right: 65px !important;} </style>');
     if (settingBuildNums) {
         setupPage();
-        setInterval(function() {
+        setInterval(function () {
             updateVerNumbers();
         }, 10 * 1000);
     }
-    setInterval(function() {
+    setInterval(function () {
         if (settingRTECommands) {
             //Custom commands override hook for RTE
             rteOverride();
@@ -97,14 +102,14 @@ function run() {
         }
         var newCards = [];
         //Find unprocessed cards and style them
-        $('.card:not([task-buildnum])').each(function(i, obj) {
+        $('.card:not([task-buildnum])').each(function (i, obj) {
             if (settingBuildNums) {
                 initializeCard(this);
             }
             newCards.push($(this));
         });
         //Loop through all new cards
-        $(newCards).each(function(i, obj) {
+        $(newCards).each(function (i, obj) {
             var card = newCards[i];
             $(card).attr("task-buildnum", "pending");
             //Modify cosmetics
@@ -116,17 +121,19 @@ function run() {
         });
         if (settingBuildNums) {
             //Update pre-existing cards
-            $('.card[task-buildnum][task-buildnum!="pending"]').each(function(i, obj) {
+            $('.card[task-buildnum][task-buildnum!="pending"]').each(function (i, obj) {
                 evaluateCardVer(this, $(this).attr("task-buildnum").trim());
             });
         }
         if (settingSumHours) {
-            $(".columnHeader").each(function() {
+            $(".columnHeader").each(function () {
                 var columnType = $(this).attr("data-columntype");
                 var totalCount = 0;
-                $('[data-columntype="' + columnType + '"] .card').each(function() {
+                $('[data-columntype="' + columnType + '"] .card').each(function () {
                     var countStr = $(this).find(".taskBoardCardColumn3").text().replace("h", "").trim();
-                    if (countStr >= 0) {
+
+                    var countStr = $(this).attr("task-remainingwork");
+                    if (countStr != null && countStr != "") {
                         totalCount += parseFloat(countStr);
                     }
                 });
@@ -136,7 +143,17 @@ function run() {
                 $(this).find(".itemCountSum").text(" (" + totalCount + "h)");
             });
         }
+
+        // Insert TFS Card Mod sig tag in Help Menu
+        if ($('.help-menu li ul li').length > 0 && $('.tfs-card-mod-sig').length == 0) {
+            var manifestData = chrome.runtime.getManifest();
+            $(".help-menu li ul").append('<li id="mi_30" role="menuitem" class="menu-item tfs-card-mod-sig" title="TFS Card Mod ' + manifestData.version + '" onclick="window.open(\'https://chrome.google.com/webstore/detail/olfpjmbnimcoagkbkbnchlkcmloagdkd\',\'_blank\');"><span class="text">TFS Card Mod ' + manifestData.version + '</span><span class="html"></span></li>');
+        }
+
+
     }, 100);
+
+
 }
 
 function setupPage() {
@@ -150,12 +167,14 @@ function setupPage() {
         $("#header-row").css("color", "#FFF");
         $("#goVerNum").css("font-weight", "700");
     }
+
+
 }
 
 function updateVerNumbers() {
     if (settingBuildNums_BBFG) {
         var bbfgxmlhttp = new XMLHttpRequest();
-        bbfgxmlhttp.onreadystatechange = function() {
+        bbfgxmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == "200") {
                 try {
                     var page1 = document.implementation.createHTMLDocument("");
@@ -180,7 +199,7 @@ function updateVerNumbers() {
     }
     if (settingBuildNums_GO) {
         var goxmlhttp = new XMLHttpRequest();
-        goxmlhttp.onreadystatechange = function() {
+        goxmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == "200") {
                 try {
                     var page2 = document.implementation.createHTMLDocument("");
@@ -240,9 +259,12 @@ function formatCard(card) {
         cardDetails.find(".cardFooter").css("left", "15px");
         cardDetails.find(".cardFooter").css("right", "0px");
         cardDetails.find(".cardFooter").css("bottom", "0px");
-        $(card).find('.taskBoardCardColumn2').css("width", "70%");
+
+        $(card).find('.taskBoardCardColumn2').css("width", "calc(100% - 63px)");
         $(card).find('.taskBoardCardColumn2').css("margin-left", "2px");
-        $(card).find(".taskBoardCardColumn3").css("cssText", "width: 20% !important");
+        $(card).find(".taskBoardCardColumn3").css("cssText", "max-width: 58px; width: 58px !important; margin-right: 3px");
+
+
         cardShadow.css("width", "13px");
         cardShadow.css("height", "92px");
         cardShadow.css("border-top-left-radius", "5px");
@@ -250,6 +272,8 @@ function formatCard(card) {
         cardShadow.find("img").hide();
         cardDetails.css("width", "90%");
         cardDetails.css("padding-left", "1px");
+
+
     }
     if (settingCosmetics || settingNameStamp || settingDisplayAvatar) {
         cardControls.css("cssText", "margin-right: 0px !important;");
@@ -329,7 +353,7 @@ function fetchTaskInfo(card) {
     var taskNum = $(card).find(".cardId").find('a').text();
     var jqxhr = $.post("/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum, {
         __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val()
-    }).done(function() {
+    }).done(function () {
         var responseText = jQuery.parseJSON(jqxhr.responseText);
         if (settingBuildNums) {
             var verNum = responseText["__wrappedArray"][0]["fields"]["10046"];
@@ -339,17 +363,38 @@ function fetchTaskInfo(card) {
                 $(card).attr("task-buildnum", "");
             }
         }
+        var hoursDev = responseText["__wrappedArray"][0]["fields"]["10115"];
+        if (hoursDev == "" || hoursDev == null) {
+            hoursDev = "_";
+        }
+        var hoursTest = responseText["__wrappedArray"][0]["fields"]["10116"];
+        if (hoursTest == "" || hoursTest == null) {
+            hoursTest = "_";
+        }
+        var hoursRemaining = responseText["__wrappedArray"][0]["fields"]["10043"];
+        var actualWork = responseText["__wrappedArray"][0]["fields"]["10114"];
+        $(card).attr("task-remainingwork", hoursRemaining);
+        var taskType = responseText["__wrappedArray"][0]["fields"]["25"];
         if (settingBugHours) {
             // Fill in "Remaining Work" field for Bugs fix
-            if (responseText["__wrappedArray"][0]["fields"]["25"] == "Bug" && responseText["__wrappedArray"][0]["fields"]["10043"]) {
-                $(card).find('.taskBoardCardColumn3').text(responseText["__wrappedArray"][0]["fields"]["10043"] + " h");
+            if (taskType == "Bug" && hoursRemaining > 0) {
+                $(card).find('.taskBoardCardColumn3').text(hoursRemaining + " h");
+                $(card).find('.taskBoardCardColumn3').attr("data-referencename", "Microsoft.VSTS.Scheduling.RemainingWork");
+                $(card).find('.taskBoardCardColumn3').attr("title", "Remaining Work");
             }
-            $(card).find('.taskBoardCardColumn3').attr("title", "Remaining Work");
-            $(card).find('.taskBoardCardColumn3').attr("data-referencename", "Microsoft.VSTS.Scheduling.RemainingWork");
         }
+        if (settingBreakdownHours) {
+            if (hoursRemaining) {
+                $(card).find('.taskBoardCardColumn3').text(hoursRemaining + " [" + hoursDev + "/" + hoursTest + "]");
+                $(card).find('.taskBoardCardColumn3').attr("title", "Remaining Work: " + hoursRemaining + "h [Development: " + hoursDev + "h, Testing: " + hoursTest + "h]");
+            }
+        }
+
+
+
         if (settingShowMissingWork) {
             var columnType = $(card).closest(".column").attr("data-columntype");
-            if (responseText["__wrappedArray"][0]["fields"]["10114"] || columnType == "To Do" || columnType == "In Progress" || columnType == "Done") {
+            if (actualWork >=0 || columnType == "To Do" || columnType == "In Progress") {
                 $(card).css("box-shadow", "");
                 $(card).attr("title", "");
                 $(card).find(".title").attr("title", $(card).find(".title").text());
@@ -361,7 +406,7 @@ function fetchTaskInfo(card) {
         }
         processTags(card, responseText["__wrappedArray"][0]["fields"]["80"]);
         processAvatar(card, responseText["__wrappedArray"][0]["fields"]["24"]);
-    }).fail(function() {
+    }).fail(function () {
         console.log("ERROR FETCHING DATA FOR TASK " + taskNum + " -- URI: " + "http://tfs:8080/tfs/MainProjects/_api/_wit/workitems?__v=5&ids=" + taskNum)
     })
 }
@@ -371,6 +416,7 @@ function initializeCard(card) {
     $(card).css('border', 'none');
     $(card).css('opacity', '0.2');
     $(card).find('.idBar').prepend("<img class='load-spinner' src='//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif' style='margin: 9px 5px 0 6px;float: left;'/>")
+
 }
 
 function processTags(card, tagsStr) {
@@ -435,9 +481,9 @@ function processAvatar(card, assignedUserStr) {
 }
 
 function rteOverride() {
-    $('.richeditor-editarea iframe:not([listenerAdded])').each(function(i, obj) {
+    $('.richeditor-editarea iframe:not([listenerAdded])').each(function (i, obj) {
         if (obj.contentWindow.document.body) {
-            obj.contentWindow.document.body.addEventListener('keydown', function(e) {
+            obj.contentWindow.document.body.addEventListener('keydown', function (e) {
                 switch (e.which) {
                     case (9):
                         if (e.shiftKey) {
@@ -479,8 +525,9 @@ function loadSettings() {
         sRTE: "true",
         sTitle: "true",
         sShowMissingWork: "true",
-        sColTotals: "true"
-    }, function(items) {
+        sColTotals: "true",
+        sBreakdownHours: "true"
+    }, function (items) {
         settingColors = items.sColors;
         switch (items.sBuildNums) {
             case ("both"):
@@ -518,6 +565,7 @@ function loadSettings() {
         settingFixTitle = items.sTitle;
         settingShowMissingWork = items.sShowMissingWork;
         settingSumHours = items.sColTotals;
+        settingBreakdownHours = items.sBreakdownHours;
         settingsLoaded = true;
     });
 }

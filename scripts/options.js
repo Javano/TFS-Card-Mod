@@ -15,6 +15,7 @@ function save_options() {
   var title = document.getElementById('cbTitle').checked;
   var showMissingWork = document.getElementById('cbShowMissingWork').checked;
   var colTotals = document.getElementById('cbColTotals').checked;
+  var breakdownHours = document.getElementById('cbBreakdownHours').checked;
   chrome.storage.sync.set({
     sColors: colors,
     sBuildNums: buildNums,
@@ -27,7 +28,8 @@ function save_options() {
     sRTE: RTE,
     sTitle: title,
     sShowMissingWork: showMissingWork,
-    sColTotals: colTotals
+    sColTotals: colTotals,
+    sBreakdownHours: breakdownHours
   }, function () {
     // Update status to let user know options were saved.
     var status = document.getElementById('status');
@@ -54,7 +56,8 @@ function restore_options() {
     sRTE: "true",
     sTitle: "true",
     sShowMissingWork: "true",
-    sColTotals: "true"
+    sColTotals: "true",
+    sBreakdownHours: "true"
 
   }, function (items) {
     document.getElementById('cbColors').checked = items.sColors;
@@ -74,6 +77,7 @@ function restore_options() {
     document.getElementById('cbTitle').checked = items.sTitle;
     document.getElementById('cbShowMissingWork').checked = items.sShowMissingWork;
     document.getElementById('cbColTotals').checked = items.sColTotals;
+    document.getElementById('cbBreakdownHours').checked = items.sBreakdownHours;
   });
 }
 
