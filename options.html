@@ -18,16 +18,43 @@
     .centered-form {
       margin-top: 60px;
     }
-    
+
     .centered-form .panel {
       background: rgba(255, 255, 255, 0.8);
       box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
     }
-    .panel-title{
-      font-weight:bold;
+
+    .panel-title {
+      font-weight: bold;
     }
-    body{
-      font-size:13px;
+
+    body {
+      font-size: 13px;
+    }
+
+    .panel-heading {
+      background-color: #131212 !important;
+      color: #ddd!important;
+    }
+
+    .panel {
+      border: solid 1px #131212 !important;
+    }
+
+    input[type="button" i]:disabled,
+    input[type="submit" i]:disabled,
+    input[type="reset" i]:disabled,
+    input[type="file" i]:disabled::-webkit-file-upload-button,
+    button:disabled,
+    select:disabled,
+    optgroup:disabled,
+    option:disabled,
+    select[disabled]>option {
+      color: gray;
+    }
+
+    #version {
+      color: gray;
     }
   </style>
 </head>
@@ -97,27 +124,33 @@ Enable Custom RTE Commands
 Set Window Title To Project Name
 </label>
               <br/>
-                            <label>
+              <label>
 
 <input type="checkbox" id="cbShowMissingWork"/>
 Highlight Items Missing Actual Work Value
 </label>
               <br/>
-                               <label>           
+              <label>           
 <input type="checkbox" id="cbColTotals"/>
 Display Column Work-Hour Totals:
 </label>
               <br/>
-              <label>Build Number Functionality:
-    <select id="ddlBuildNums">
- <option value="disabled">Disabled</option>
- <option value="go">Go Only</option>
-</select>
+              <label>
+
+<input type="checkbox" id="cbBuildNums"/>
+GO Build Number Functionality
 </label>
               <br/>
-              <label>Display Owner On Card:
+              <label>
+
+<input type="checkbox" id="cbSeverity"/>
+Display Severity on Card
+</label>
+              <br/>
+              <label>
+                <input type="checkbox" id="cbOwner"/>
+Display Owner on Card
     <select id="ddlOwner">
- <option value="disabled">Disabled</option>
  <option value="avatar">Avatar</option>
  <option value="name">Name</option>
 </select>
@@ -131,6 +164,7 @@ Display Column Work-Hour Totals:
             <a id="save" class="btn navbar-btn btn-primary" href="#" target="_texturepack" style="float:none">Save</a>
             <a id="reset" class="btn navbar-btn btn-default" href="#" target="_texturepack" style="float:none">Reset</a>
             <div id="status"></div>
+            <div id="version"></div>
             <br/>
           </div>
 

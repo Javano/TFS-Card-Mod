@@ -1,3 +1,11 @@
+
+/*
+
+FORMAT CONSOLE OUTPUT:
+window.console.log("%c%s","color: red; background: yellow; font-size: 24px;","WARNING!");
+
+*/
+
 var bbfgURL = "https://bbfg.itracks.com/BBFG4/en-us/login.aspx";
 var goURL = "https:/go.itracks.com/GO/en-US/Login.aspx";
 var goVersion = "";
@@ -7,16 +15,21 @@ var bbfgVersionInt = "";
 var pattern = /(\d+)\.\d+\.\d+\.\d+/
 var hexPtrn = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
 var fNamePtrn = /ITRACKS\\(\w+)\./
-var tagIconDict = {
+var tagIconProdDict = {
     CHAT: "icons/chat.png",
     VIDEOCHAT: "icons/vchat.png",
     VIDEOVAULT: "icons/vault.png",
+    VAULT: "icons/vault.png",
     IMARKIT: "icons/imarkit.png",
     IDI: "icons/idi.png",
     BOARD: "icons/board.png",
-    BBFG: "icons/board.png",
+    BBFG: "icons/board.png"
+};
+var tagIconPlatDict = {
     ANDROID: "icons/android.png",
-    IOS: "icons/ios.png",
+    IOS: "icons/ios.png"
+};
+var tagIconBrowsDict = {
     IE: "icons/ie.png",
     IE9: "icons/ie.png",
     IE10: "icons/ie.png",
@@ -26,6 +39,12 @@ var tagIconDict = {
     CHROME: "icons/chrome.png",
     SAFARI: "icons/safari.png",
     EDGE: "icons/edge.png"
+};
+var tagIconMiscDict = {
+    PRODUCTIONBUG: "icons/prod.png",
+    PRODUCTIONISSUE: "icons/prod.png",
+    DOCUMENTATION: "icons/doc.png",
+    PATCH: "icons/patch.png"
 };
 var settingColors = false;
 var settingBuildNums = false;
@@ -44,13 +63,14 @@ var settingsLoaded = false;
 var settingsSumHours = false;
 var settingShowMissingWork = false;
 var settingBreakdownHours = false;
-
+var settingSeverity = false;
 
 
 
 $(document).ready(function () {
     loadSettings();
     checkIfReady();
+
 });
 
 function checkIfReady() {
@@ -62,8 +82,12 @@ function checkIfReady() {
 }
 
 function run() {
+
     if (settingCosmetics) {
-        $('head').append('<style type="text/css"> .card { border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important; width: 99% !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } </style>');
+        $('head').append('<style type="text/css"> .card { border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important; width: 99% !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } .cardShadow:hover {opacity: 0.8;}</style>');
+    }
+    if (settingSeverity) {
+        $('head').append('<style>.severityDiv { display: inline;background-color: rgb(191, 190, 190);border-radius: 3px;padding: 0px 3px 0px 3px;font-weight: bold;height:15px;bottom: 1px;width: 15px;line-height: 100%;position: absolute;border: #9c9c9c 1px solid;margin-left:1px;} .severity1 {background-color: rgba(255, 7, 7, 0.65); border-color: #d20101;}</style>');
     }
     if (settingScrolls) {
         $('head').append('<style type="text/css"> ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
@@ -150,20 +174,18 @@ function run() {
             $(".help-menu li ul").append('<li id="mi_30" role="menuitem" class="menu-item tfs-card-mod-sig" title="TFS Card Mod ' + manifestData.version + '" onclick="window.open(\'https://chrome.google.com/webstore/detail/olfpjmbnimcoagkbkbnchlkcmloagdkd\',\'_blank\');"><span class="text">TFS Card Mod ' + manifestData.version + '</span><span class="html"></span></li>');
         }
 
-
     }, 100);
-
 
 }
 
 function setupPage() {
-    if (settingBuildNums_BBFG) {
-        $("#header-row").append('<span class="slash">/</span><span> BBFG Version: </span><span id="bbfgVerNum"><img class="load-spinner" id="bbfgVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
+    if (settingBuildNums_BBFG && $("#lblBBFGVer").length == 0) {
+        $("#header-row").append('<span class="slash">/</span><span id="lblBBFGVer" > BBFG Version: </span><span id="bbfgVerNum"><img class="load-spinner" id="bbfgVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
         $("#header-row").css("color", "#FFF");
         $("#bbfgVerNum").css("font-weight", "700");
     }
-    if (settingBuildNums_GO) {
-        $("#header-row").append('<span class="slash">-</span><span> GO Version: </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
+    if (settingBuildNums_GO && $("#lblGOVer").length == 0) {
+        $("#header-row").append('<span class="slash">-</span><span id="lblGOVer" > GO Version: </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="//tfs:8080/tfs/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
         $("#header-row").css("color", "#FFF");
         $("#goVerNum").css("font-weight", "700");
     }
@@ -260,9 +282,8 @@ function formatCard(card) {
         cardDetails.find(".cardFooter").css("right", "0px");
         cardDetails.find(".cardFooter").css("bottom", "0px");
 
-        $(card).find('.taskBoardCardColumn2').css("width", "calc(100% - 63px)");
+        $(card).find('.taskBoardCardColumn2').css("width", "calc(100% - 70px)");
         $(card).find('.taskBoardCardColumn2').css("margin-left", "2px");
-        $(card).find(".taskBoardCardColumn3").css("cssText", "max-width: 58px; width: 58px !important; margin-right: 3px");
 
 
         cardShadow.css("width", "13px");
@@ -275,6 +296,16 @@ function formatCard(card) {
 
 
     }
+
+    if (settingSeverity) {
+        $(card).find(".cardFooter").prepend("<div class='severityDiv' style='visibility:hidden'></div>");
+        $(card).find('.taskBoardCardColumn2').css("margin-left", "19px");
+        $(card).find('.taskBoardCardColumn2').css("width", "calc(100% - 85px)");
+
+        if (settingCosmetics) {
+            $(card).find('.severityDiv').css("bottom", "2px");
+        }
+    }
     if (settingCosmetics || settingNameStamp || settingDisplayAvatar) {
         cardControls.css("cssText", "margin-right: 0px !important;");
         cardControls.css("margin-left", "1px");
@@ -285,6 +316,11 @@ function formatCard(card) {
     }
     if (settingBuildNums) {
         $(idBar).prepend("<div class='buildNumDiv' style='margin: 5px 2px 0 1px; float: left; font-weight: bold;'></div>");
+    }
+
+
+    if (settingBreakdownHours) {
+        $(card).find(".taskBoardCardColumn3").css("cssText", "max-width: 61px; width: 61px !important; margin-right: 5px;text-align: right;");
     }
 }
 
@@ -365,16 +401,40 @@ function fetchTaskInfo(card) {
         }
         var hoursDev = responseText["__wrappedArray"][0]["fields"]["10115"];
         if (hoursDev == "" || hoursDev == null) {
-            hoursDev = "_";
+            hoursDev = "-";
         }
         var hoursTest = responseText["__wrappedArray"][0]["fields"]["10116"];
         if (hoursTest == "" || hoursTest == null) {
-            hoursTest = "_";
+            hoursTest = "-";
         }
         var hoursRemaining = responseText["__wrappedArray"][0]["fields"]["10043"];
         var actualWork = responseText["__wrappedArray"][0]["fields"]["10114"];
         $(card).attr("task-remainingwork", hoursRemaining);
         var taskType = responseText["__wrappedArray"][0]["fields"]["25"];
+
+
+        var severity = responseText["__wrappedArray"][0]["fields"]["10053"];
+        if (settingSeverity && severity != "" & severity != null) {
+            var severityDiv = $(card).find(".severityDiv");
+            switch (severity.charAt(0)) {
+                case ('1'):
+                    $(severityDiv).addClass("severity1");
+                    break;
+                case ('2'):
+                    $(severityDiv).addClass("severity2");
+                    break;
+                case ('3'):
+                    $(severityDiv).addClass("severity3");
+                    break;
+                case ('4'):
+                    $(severityDiv).addClass("severity4");
+                    break;
+                case ('5'):
+                    $(severityDiv).addClass("severity5");
+                    break;
+            }
+            $(severityDiv).text(severity.charAt(0));
+        }
         if (settingBugHours) {
             // Fill in "Remaining Work" field for Bugs fix
             if (taskType == "Bug" && hoursRemaining > 0) {
@@ -390,11 +450,17 @@ function fetchTaskInfo(card) {
             }
         }
 
-
+        if (settingSeverity) {
+            if (taskType == "Bug") {
+                $(card).find(".severityDiv").css("visibility", "visible");
+            } else {
+                $(card).find(".taskBoardCardColumn2").css("margin-left", "2px");
+            }
+        }
 
         if (settingShowMissingWork) {
             var columnType = $(card).closest(".column").attr("data-columntype");
-            if (actualWork >=0 || columnType == "To Do" || columnType == "In Progress") {
+            if (actualWork >= 0 || columnType == "To Do" || columnType == "In Progress") {
                 $(card).css("box-shadow", "");
                 $(card).attr("title", "");
                 $(card).find(".title").attr("title", $(card).find(".title").text());
@@ -404,6 +470,12 @@ function fetchTaskInfo(card) {
                 $(card).css("box-shadow", "0px 0px 5px 2px #ff0000", "important");
             }
         }
+
+
+        if (settingTagIcons) {
+            $(card).find(".cardControls").first().before("<span id='miscIcons'></span><span id='prodIcons'></span><span id='platIcons'></span><span id='browsIcons'></span>");
+        }
+
         processTags(card, responseText["__wrappedArray"][0]["fields"]["80"]);
         processAvatar(card, responseText["__wrappedArray"][0]["fields"]["24"]);
     }).fail(function () {
@@ -429,9 +501,23 @@ function processTags(card, tagsStr) {
         for (var i = 0; i < tagsArr.length; i++) {
             var match = hexPtrn.exec(tagsArr[i]);
             if (!match) {
-                if (settingTagIcons && tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
-                    $(card).find(".cardControls").first().before("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 1px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
-                } else if (settingDisplayTags) {
+                var foundIcon = false;
+                if (settingTagIcons) {
+                    if (tagIconProdDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
+                        $(card).find("#prodIcons").prepend("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 1px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconProdDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
+                        foundIcon = true;
+                    } else if (tagIconPlatDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
+                        $(card).find("#platIcons").prepend("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 1px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconPlatDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
+                        foundIcon = true;
+                    } else if (tagIconBrowsDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
+                        $(card).find("#browsIcons").prepend("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 1px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconBrowsDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
+                        foundIcon = true;
+                    } else if (tagIconMiscDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) {
+                        $(card).find("#miscIcons").prepend("<a class='cardControls' href='#' hidefocus='hidefocus' style='float: left;padding-top: 5px;cursor: move;margin-left: 1px;margin-right: 0px !important'><img src='" + chrome.extension.getURL(tagIconMiscDict[tagsArr[i].trim().replace(" ", "").toUpperCase()]) + "' title='" + tagsArr[i] + "' alt='" + tagsArr[i] + "' width='16' height='16'></a>");
+                        foundIcon = true;
+                    }
+                }
+                if (!foundIcon && settingDisplayTags) {
                     if ($(cardFooter).text() != "") {
                         $(cardFooter).text($(cardFooter).text() + ", ");
                     }
@@ -514,42 +600,30 @@ function rteOverride() {
 
 function loadSettings() {
     chrome.storage.sync.get({
-        sColors: "true",
-        sBuildNums: "go",
-        sIcons: "true",
-        sTags: "true",
+        sColors: true,
+        sBuildNums: true,
+        sIcons: true,
+        sTags: true,
         sOwner: "avatar",
-        sBugHours: "true",
-        sScrolls: "true",
-        sCosmetics: "true",
-        sRTE: "true",
-        sTitle: "true",
-        sShowMissingWork: "true",
-        sColTotals: "true",
-        sBreakdownHours: "true"
+        sBugHours: true,
+        sScrolls: true,
+        sCosmetics: true,
+        sRTE: true,
+        sTitle: true,
+        sShowMissingWork: true,
+        sColTotals: true,
+        sBreakdownHours: true,
+        sSeverity: true
     }, function (items) {
         settingColors = items.sColors;
-        switch (items.sBuildNums) {
-            case ("both"):
-                settingBuildNums = true;
-                settingBuildNums_BBFG = true;
-                settingBuildNums_GO = true;
-                break;
-            case ("go"):
-                settingBuildNums = true;
-                settingBuildNums_BBFG = false;
-                settingBuildNums_GO = true;
-                break;
-            case ("bbfg"):
-                settingBuildNums = true;
-                settingBuildNums_BBFG = true;
-                settingBuildNums_GO = false;
-                break;
-            default:
-                settingBuildNums = false;
-                settingBuildNums_GO = false;
-                settingBuildNums_BBFG = false;
-                break;
+        if (items.sBuildNums == false) {
+            settingBuildNums = false;
+            settingBuildNums_GO = false;
+            settingBuildNums_BBFG = false;
+        } else {
+            settingBuildNums = true;
+            settingBuildNums_GO = true;
+            settingBuildNums_BBFG = false;
         }
         settingTagIcons = items.sIcons;
         settingDisplayTags = items.sTags;
@@ -566,6 +640,8 @@ function loadSettings() {
         settingShowMissingWork = items.sShowMissingWork;
         settingSumHours = items.sColTotals;
         settingBreakdownHours = items.sBreakdownHours;
+        settingSeverity = items.sSeverity;
+
         settingsLoaded = true;
     });
 }
