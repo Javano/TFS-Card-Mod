@@ -44,7 +44,9 @@ var tagIconMiscDict = {
     PRODUCTIONBUG: "icons/prod.png",
     PRODUCTIONISSUE: "icons/prod.png",
     DOCUMENTATION: "icons/doc.png",
-    PATCH: "icons/patch.png"
+    PATCH: "icons/patch.png",
+    AUTOMATEDTESTING: "icons/auto.png",
+    AUTOMATION: "icons/auto.png"
 };
 var settingColors = false;
 var settingBuildNums = false;
@@ -64,7 +66,7 @@ var settingsSumHours = false;
 var settingShowMissingWork = false;
 var settingBreakdownHours = false;
 var settingSeverity = false;
-
+var settingAutoColumns = false;
 
 
 $(document).ready(function () {
@@ -84,7 +86,7 @@ function checkIfReady() {
 function run() {
 
     if (settingCosmetics) {
-        $('head').append('<style type="text/css"> .card { border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important; width: 99% !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } .cardShadow:hover {opacity: 0.8;}</style>');
+        $('head').append('<style type="text/css">.card {z-index:10 !important; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important; width: 99% !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } .cardShadow:hover {opacity: 0.8;} .card.ui-draggable-dragging{z-index: 11 !important} </style>');
     }
     if (settingSeverity) {
         $('head').append('<style>.severityDiv { display: inline;background-color: rgb(191, 190, 190);border-radius: 3px;padding: 0px 3px 0px 3px;font-weight: bold;height:15px;bottom: 1px;width: 15px;line-height: 100%;position: absolute;border: #9c9c9c 1px solid;margin-left:1px;} .severity1 {background-color: rgba(255, 7, 7, 0.65); border-color: #d20101;}</style>');
@@ -92,6 +94,11 @@ function run() {
     if (settingScrolls) {
         $('head').append('<style type="text/css"> ::-webkit-scrollbar { width: 12px; } ::-webkit-scrollbar-track {border: 1px solid rgba(214, 214, 214, 0.81); border-radius: 10px; background-color: rgba(236, 234, 234, 0.85);} ::-webkit-scrollbar-thumb {border: 1px solid #bbbbbb;border-radius: 10px; background-color: rgb(204, 204, 204);}</style>');
     }
+    if (settingAutoColumns) {
+        $('head').append(`<style type="text/css" id="settingFixColumns">.backlogItem .children{display: flex;} #columnHeaders{display: flex;} #columnHeaders{position:relative !important;}   .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;}</style>`);
+
+    }
+
     if (settingFixTitle) {
         document.title = $(".menu-bar li span").first().text();
     }
@@ -108,6 +115,7 @@ function run() {
             //Custom commands override hook for RTE
             rteOverride();
         }
+
         if (settingBuildNums) {
             if (goVersion) {
                 if (goVersion != "ERROR") {
@@ -175,6 +183,20 @@ function run() {
         }
 
     }, 100);
+    if (settingAutoColumns) {
+        setTimeout(checkForColumnCount, 300);
+    }
+}
+function checkForColumnCount() {
+    if ($("#columnHeaders .columnHeader").length) {
+        var colCount = $("#columnHeaders .columnHeader").length;
+        var columnWidth = (99 / colCount);
+        var columnMinWidth = (1030 / colCount);
+
+        $('#settingFixColumns').html(`<style type="text/css" setting="settingFixColumns"> .backlogItem .children{display: flex;} #columnHeaders{display: flex;} #columnHeaders{position:relative !important;}  .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;} .backlogItem .children{display: flex;} #columnHeaders{display: flex;} .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;} #columnHeaders{position:relative !important;} div.columnHeader{min-width: ${columnMinWidth}px !important; max-width: ${columnWidth}vw !important;width: ${columnWidth}vw;} div.column{min-width: ${columnMinWidth}px !important; max-width: ${columnWidth}vw !important;width: ${columnWidth}vw;}</style>`);
+    } else {
+        setTimeout(checkForColumnCount, 300);
+    }
 
 }
 
@@ -613,7 +635,8 @@ function loadSettings() {
         sShowMissingWork: true,
         sColTotals: true,
         sBreakdownHours: true,
-        sSeverity: true
+        sSeverity: true,
+        sAutoColumns: true
     }, function (items) {
         settingColors = items.sColors;
         if (items.sBuildNums == false) {
@@ -641,6 +664,7 @@ function loadSettings() {
         settingSumHours = items.sColTotals;
         settingBreakdownHours = items.sBreakdownHours;
         settingSeverity = items.sSeverity;
+        settingAutoColumns = items.sAutoColumns;
 
         settingsLoaded = true;
     });
