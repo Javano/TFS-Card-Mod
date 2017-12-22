@@ -77,7 +77,7 @@ var tfsVersion;
 
 $(document).ready(function () {
 
-    if(window.location.hostname.includes("2018")){
+    if (window.location.hostname.includes("2018")) {
         tfsPath = "";
         tfsVersion = 2018;
     } else {
@@ -98,7 +98,7 @@ function checkIfReady() {
 }
 
 function run() {
-
+    $('head').append('<style type="text/css">.card {z-index:10 !important;}</style>');
     if (settingCosmetics) {
         $('head').append('<style type="text/css">.card {z-index:10 !important; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 5px; border-top-left-radius: 5px; box-shadow: 0px 1px 1px #aaaaaa; border: none !important; width: 99% !important;} .card:hover { opacity: 1 !important;} .card .cardShadow { border-top-left-radius: 10px; border-bottom-left-radius: 10px; } .cardShadow:hover {opacity: 0.8;} .card.ui-draggable-dragging{z-index: 11 !important} </style>');
     }
@@ -114,13 +114,13 @@ function run() {
     }
 
     if (settingFixTitle) {
-        switch(tfsVersion){
+        switch (tfsVersion) {
             case 2015:
-            document.title = $(".menu-bar li span").first().text();
-            break;
+                document.title = $(".menu-bar li span").first().text();
+                break;
             case 2018:
-            document.title = $(".l1-navigation-text").attr("title");
-            break;
+                document.title = $(".l1-navigation-text").attr("title");
+                break;
         }
     }
     //Fixes the close/maximize icons overlapping in the task view
@@ -198,9 +198,20 @@ function run() {
         }
 
         // Insert TFS Card Mod sig tag in Help Menu
-        if ($('.help-menu li ul li').length > 0 && $('.tfs-card-mod-sig').length == 0) {
-            var manifestData = chrome.runtime.getManifest();
-            $(".help-menu li ul").append('<li id="mi_30" role="menuitem" class="menu-item tfs-card-mod-sig" title="TFS Card Mod ' + manifestData.version + '" onclick="window.open(\'https://chrome.google.com/webstore/detail/olfpjmbnimcoagkbkbnchlkcmloagdkd\',\'_blank\');"><span class="text">TFS Card Mod ' + manifestData.version + '</span><span class="html"></span></li>');
+        var manifestData = chrome.runtime.getManifest();
+        switch (tfsVersion) {
+            case 2015:
+                if ($('.help-menu li ul li').length > 0 && $('.tfs-card-mod-sig').length == 0) {
+                    $(".help-menu li ul").append('<li id="mi_30" role="menuitem" class="menu-item tfs-card-mod-sig" title="TFS Card Mod ' + manifestData.version + '" onclick="window.open(\'https://chrome.google.com/webstore/detail/olfpjmbnimcoagkbkbnchlkcmloagdkd\',\'_blank\');"><span class="text">TFS Card Mod ' + manifestData.version + '</span><span class="html"></span></li>');
+
+                }
+                break;
+            case 2018:
+                if ($('#ms-vss-tfs-web-header-level1-right-menu-bar ul.sub-menu li').length > 0 && $('.tfs-card-mod-sig').length == 0) {
+                    $("#ms-vss-tfs-web-header-level1-right-menu-bar ul.sub-menu").last().append(`<li id="mi_196" class="menu-item menu-item-separator" role="separator" title=""><div class="separator"></div></li><li class="menu-item tfs-card-mod-sig" tabindex="-1" role="menuitem" title="" aria-disabled="false" aria-posinset="5" aria-setsize="5"><span class="text" role="button" onclick="window.open(\'https://chrome.google.com/webstore/detail/olfpjmbnimcoagkbkbnchlkcmloagdkd\',\'_blank\');">TFS Card Mod ${manifestData.version}</span><span class="html"></span></li>`);
+                }
+                break;
+
         }
 
     }, 100);
@@ -211,7 +222,7 @@ function run() {
 function checkForColumnCount() {
     if ($("#columnHeaders .columnHeader").length) {
         var colCount = $("#columnHeaders .columnHeader").length;
-        var columnWidth = (99 / colCount);
+        var columnWidth = (100 / colCount);
         var columnMinWidth = (1030 / colCount);
 
         $('#settingFixColumns').html(`<style type="text/css" setting="settingFixColumns"> .backlogItem .children{display: flex;} #columnHeaders{display: flex;} #columnHeaders{position:relative !important;}  .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;} .backlogItem .children{display: flex;} #columnHeaders{display: flex;} .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;} #columnHeaders{position:relative !important;} div.columnHeader{min-width: ${columnMinWidth}px !important; max-width: ${columnWidth}vw !important;width: ${columnWidth}vw;} div.column{min-width: ${columnMinWidth}px !important; max-width: ${columnWidth}vw !important;width: ${columnWidth}vw;}</style>`);
