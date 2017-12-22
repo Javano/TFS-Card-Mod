@@ -7,7 +7,7 @@ function save_options() {
   var buildNums = document.getElementById('cbBuildNums').checked;
   var icons = document.getElementById('cbIcons').checked;
   var tags = document.getElementById('cbTags').checked;
-  var owner = document.getElementById('ddlOwner').value;
+  var owner = $("#ddlOwner label.active input").attr("value");
   if (!$("#cbOwner")[0].checked) {
     owner = "disabled";
   }
@@ -44,8 +44,8 @@ function save_options() {
     var status = document.getElementById('status');
     status.textContent = 'Options saved.';
     setTimeout(function () {
-    $("#status").hide();
-    $("#version").show();
+      $("#status").hide();
+      $("#version").show();
       status.textContent = '';
     }, 750);
   });
@@ -85,20 +85,16 @@ function restore_options() {
     switch (items.sOwner) {
       case ("disabled"):
         $("#cbOwner")[0].checked = false;
-        $("#ddlOwner").prop("disabled", true);
-        $("#ddlOwner").parent().prop("disabled", true);
         break;
       case ("avatar"):
         $("#cbOwner")[0].checked = true;
-        $("#ddlOwner")[0].value = items.sOwner;
-        $("#ddlOwner").prop("disabled", false);
-        $("#ddlOwner").parent().prop("disabled", false);
+        $(`#ddlOwner-${items.sOwner}`).click();
+        $("#ddlOwner").show();
         break;
       case ("name"):
         $("#cbOwner")[0].checked = true;
-        $("#ddlOwner")[0].value = items.sOwner;
-        $("#ddlOwner").prop("disabled", false);
-        $("#ddlOwner").parent().prop("disabled", false);
+        $(`#ddlOwner-${items.sOwner}`).click();
+        $("#ddlOwner").show();
         break;
     }
     document.getElementById('cbBugHours').checked = items.sBugHours;
@@ -138,7 +134,11 @@ $(document).ready(function () {
   var manifestData = chrome.runtime.getManifest();
   $("#version").text("v " + manifestData.version);
   $("#cbOwner").click(function () {
-    $("#ddlOwner").prop('disabled', !$("#cbOwner")[0].checked);
+    if ($("#cbOwner")[0].checked) {
+      $("#ddlOwner").slideDown();
+    } else {
+      $("#ddlOwner").slideUp();
+    }
   });
 
   $("#save").click(function () {

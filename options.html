@@ -7,8 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TFS Card Mod Settings</title>
   <meta charset="utf-8">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="scripts/jquery-2.1.4.min.js"></script>
+  <script src="scripts/tether.min.js"></script>
+  <script src="scripts/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="css/tether.min.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
   <script src="scripts/options.js"></script>
   <style>
     body {
@@ -56,6 +59,59 @@
     #version {
       color: gray;
     }
+
+    .material-switch>input[type="checkbox"] {
+      display: none;
+    }
+
+    .material-switch>label {
+      cursor: pointer;
+      height: 0px;
+      position: relative;
+      width: 40px;
+      margin-right: 5px;
+    }
+
+    .material-switch>label::before {
+      background: rgb(0, 0, 0);
+      box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      content: '';
+      height: 10px;
+      margin-top: -4px;
+      position: absolute;
+      opacity: 0.3;
+      transition: all 0.4s ease-in-out;
+      width: 40px;
+    }
+
+    .material-switch>label::after {
+      background: rgb(255, 255, 255);
+      border-radius: 16px;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+      content: '';
+      height: 20px;
+      left: -4px;
+      margin-top: -5px;
+      position: absolute;
+      top: -4px;
+      transition: all 0.3s ease-in-out;
+      width: 20px;
+    }
+
+    .material-switch>input[type="checkbox"]:checked+label::before {
+      background: inherit;
+      opacity: 0.5;
+    }
+
+    .material-switch>input[type="checkbox"]:checked+label::after {
+      background: inherit;
+      left: 20px;
+    }
+
+    .settingDiv {
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 
@@ -69,99 +125,131 @@
           </div>
           <div class="panel-body">
             <form role="form">
+              <h4>General Enhancements:</h4>
+              <div class="settingDiv">
+                <label for="cbCosmetics">General Cosmetic Tweaks</label>
+                <div class="material-switch pull-left">
+                  <input id="cbCosmetics" type="checkbox">
+                  <label for="cbCosmetics" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbBuildNums">GO Build Number Functionality</label>
+                <div class="material-switch pull-left">
+                  <input id="cbBuildNums" type="checkbox">
+                  <label for="cbBuildNums" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbTitle">Project Name As Window Title</label>
+                <div class="material-switch pull-left">
+                  <input id="cbTitle" type="checkbox">
+                  <label for="cbTitle" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbShowMissingWork">Highlight Items Missing 'Actual Work'</label>
+                <div class="material-switch pull-left">
+                  <input id="cbShowMissingWork" type="checkbox">
+                  <label for="cbShowMissingWork" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbColTotals">Work-Hour Column Totals</label>
+                <div class="material-switch pull-left">
+                  <input id="cbColTotals" type="checkbox">
+                  <label for="cbColTotals" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbRTE">Custom RTE Commands</label>
+                <div class="material-switch pull-left">
+                  <input id="cbRTE" type="checkbox">
+                  <label for="cbRTE" class="label-primary"></label>
+                </div>
+              </div>
 
+              <hr>
+              <h4>Card Customization:</h4>
 
-              <label>
-<input type="checkbox" id="cbColors"/>
-Enable Custom Task Colours
-</label>
-              <br/>
-              <label>
+              <div class="settingDiv">
+                <label for="cbOwner">Display Owner</label>
+                <div class="material-switch pull-left">
+                  <input id="cbOwner" type="checkbox">
+                  <label for="cbOwner" class="label-primary"></label>
+                </div>
+              </div>
+              <div id="ddlOwner" class="btn-group" data-toggle="buttons" style="display:none">
+                <div class="btn-group" data-toggle="buttons" style="margin-left: 40px;margin-bottom: 12px;margin-top: 0px;">
+                  <label class="btn btn-primary active">
+                    <input type="radio" name="options" id="ddlOwner-avatar" value="avatar" checked>Avatar
+                  </label>
+                  <label class="btn btn-primary">
+                    <input type="radio" name="options" id="ddlOwner-name" value="name"> Name
+                  </label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbTags">Display Tags</label>
+                <div class="material-switch pull-left">
+                  <input id="cbTags" type="checkbox">
+                  <label for="cbTags" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbIcons">Tag Icons</label>
+                <div class="material-switch pull-left">
+                  <input id="cbIcons" type="checkbox">
+                  <label for="cbIcons" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbBreakdownHours">Dev/Testing Time Split</label>
+                <div class="material-switch pull-left">
+                  <input id="cbBreakdownHours" type="checkbox">
+                  <label for="cbBreakdownHours" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbScrolls">Enable Scrolling</label>
+                <div class="material-switch pull-left">
+                  <input id="cbScrolls" type="checkbox">
+                  <label for="cbScrolls" class="label-primary"></label>
+                </div>
+              </div>
 
-<input type="checkbox" id="cbIcons"/>
-Enable Tag Icons
-</label>
-              <br/>
-              <label>
+              <div class="settingDiv">
+                <label for="cbSeverity">Severity Indicator</label>
+                <div class="material-switch pull-left">
+                  <input id="cbSeverity" type="checkbox">
+                  <label for="cbSeverity" class="label-primary"></label>
+                </div>
+              </div>
+              <div class="settingDiv">
+                <label for="cbColors">Custom Task Colours</label>
+                <div class="material-switch pull-left">
+                  <input id="cbColors" type="checkbox">
+                  <label for="cbColors" class="label-primary"></label>
+                </div>
+              </div>
 
-<input type="checkbox" id="cbTags"/>
-Display Tags on Card
-</label>
+              <hr>
+              <h4>Bug Fixes:</h4>
+              <div class="settingDiv">
+                <label for="cbBugHours">Show 'Remaining Work' For Bugs</label>
+                <div class="material-switch pull-left">
+                  <input id="cbBugHours" type="checkbox">
+                  <label for="cbBugHours" class="label-primary"></label>
+                </div>
+              </div>
 
-
-
-              <br/>
-              <label>
-<input type="checkbox" id="cbBugHours"/>
-Display Remaining Work For Bugs
-</label>
-              <br/>
-              <label>
-                <input type="checkbox" id="cbBreakdownHours"/>
-Display Dev/Testing Remaining Work Split
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbScrolls"/>
-Enable Scrolling on Task Cards
-</label>
-              <br/>
-              <label>
-<input type="checkbox" id="cbCosmetics"/>
-Enable General Cosmetic Tweaks
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbRTE"/>
-Enable Custom RTE Commands
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbTitle"/>
-Set Window Title To Project Name
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbShowMissingWork"/>
-Highlight Items Missing Actual Work Value
-</label>
-              <br/>
-              <label>           
-<input type="checkbox" id="cbColTotals"/>
-Display Column Work-Hour Totals:
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbBuildNums"/>
-GO Build Number Functionality
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbSeverity"/>
-Display Severity on Card
-</label>
-              <br/>
-              <label>
-                <input type="checkbox" id="cbOwner"/>
-Display Owner on Card
-    <select id="ddlOwner">
- <option value="avatar">Avatar</option>
- <option value="name">Name</option>
-</select>
-</label>
-              <br/>
-              <label>
-
-<input type="checkbox" id="cbAutoColumns"/>
-Auto Fit Column Width to Page
-</label>
-              <br/>
+              <div class="settingDiv">
+                <label for="cbAutoColumns">Fit Columns To Page</label>
+                <div class="material-switch pull-left">
+                  <input id="cbAutoColumns" type="checkbox">
+                  <label for="cbAutoColumns" class="label-primary"></label>
+                </div>
+              </div>
 
             </form>
           </div>
@@ -179,5 +267,4 @@ Auto Fit Column Width to Page
         </div>
       </div>
     </div>
-  </div>
   </div>

@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "TFS Card Mod",
-	"version": "1.11",
+	"version": "1.10.1",
 	"description": "Productivity enhancement mod for itracks Go and BBFG Boards in TFS.",  
 	"options_page": "options.html",
 	"icons": {
@@ -24,15 +24,10 @@
 				"http://tfs:8080/*",
 				"https://tfs:8080/*",
 				"http://tfs.itracks.com:8080/*",
-				"https://tfs.itracks.com:8080/*",
-				"http://tfs2018:8080/*",
-				"https://tfs2018:8080/*",
-				"http://tfs2018.itracks.com/*",
-				"https://tfs2018.itracks.com/*"
+				"https://tfs.itracks.com:8080/*"
 			],
 			"js": [
 				"scripts/jquery-2.1.4.min.js",
-				"scripts/bootstrap.min.js",
 				"scripts/content.js"
 			],
 			"run_at": "document_end"
