@@ -11,13 +11,12 @@ window.console.log("%c%s","color: red; background: yellow; font-size: 24px;","WA
 
 var tfsPath = "";
 
-var bbfgURL = "https://bbfg.itracks.com/BBFG4/en-us/login.aspx";
 var goURL = "https://go.itracks.com/GO/en-US/Login.aspx";
 var goVersion = "";
 var goVersionInt = "";
-var bbfgVersion = "";
-var bbfgVersionInt = "";
-var pattern = /(\d+)\.\d+\.\d+\.\d+/
+var goBranch = "";
+var goVerPlaceholder = "[LOADING VERSION]";
+var pattern = /(\w+)\.(\d+\.\d+\.\d+)/
 var hexPtrn = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
 var fNamePtrn = /ITRACKS\\(\w+)\./
 var tagIconProdDict = {
@@ -55,7 +54,6 @@ var tagIconMiscDict = {
 };
 var settingColors = false;
 var settingBuildNums = false;
-var settingBuildNums_BBFG = false;
 var settingBuildNums_GO = false;
 var settingTagIcons = false;
 var settingDisplayTags = false;
@@ -112,6 +110,10 @@ function run() {
         $('head').append(`<style type="text/css" id="settingFixColumns">.backlogItem .children{display: flex;} #columnHeaders{display: flex;} #columnHeaders{position:relative !important;}   .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;}</style>`);
 
     }
+    if (settingBuildNums_GO) {
+        $('head').append('<style type="text/css">#mi_4_teams{ max-width: none !important; } #mi_4_teams .text{ padding-right: 10px; }</style>');
+
+    }    
 
     if (settingFixTitle) {
         switch (tfsVersion) {
@@ -140,16 +142,16 @@ function run() {
         if (settingBuildNums) {
             if (goVersion) {
                 if (goVersion != "ERROR") {
-                    $("#goVerNum").html(goVersion);
+                    $(`*:contains("${goVerPlaceholder}")`).each(function () {
+                        if ($(this).children().length < 1)
+                        $(this).html($(this).html().replace(`${goVerPlaceholder}`,`${goVersion} [${goBranch}]`));
+                    });
                 } else {
-                    $("#goVerNum").html("<span style='color:#FF0000;text-weight:bold;'>ERROR</span>");
-                }
-            }
-            if (bbfgVersion) {
-                if (bbfgVersion != "ERROR") {
-                    $("#bbfgVerNum").html(bbfgVersion);
-                } else {
-                    $("#bbfgVerNum").html("<span style='color:#FF0000;text-weight:bold;'>ERROR</span>");
+
+                    $(`*:contains("${goVerPlaceholder}")`).each(function () {
+                        if ($(this).children().length < 1)
+                            $(this).html($(this).html().replace(`${goVerPlaceholder}`,"<span style='color:#FF0000;text-weight:bold;'>ERROR</span>"));
+                    });
                 }
             }
         }
@@ -223,7 +225,7 @@ function checkForColumnCount() {
     if ($("#columnHeaders .columnHeader").length) {
         var colCount = $("#columnHeaders .columnHeader").length;
         var columnWidth = (100 / colCount);
-        var columnMinWidth = (1030 / colCount);
+        var columnMinWidth = (1020 / colCount);
 
         $('#settingFixColumns').html(`<style type="text/css" setting="settingFixColumns"> .backlogItem .children{display: flex;} #columnHeaders{display: flex;} #columnHeaders{position:relative !important;}  .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;} .backlogItem .children{display: flex;} #columnHeaders{display: flex;} .content-section{overflow-x:hidden;} .hub-content{overflow-x:hidden;} #columnHeaders{position:relative !important;} div.columnHeader{min-width: ${columnMinWidth}px !important; max-width: ${columnWidth}vw !important;width: ${columnWidth}vw;} div.column{min-width: ${columnMinWidth}px !important; max-width: ${columnWidth}vw !important;width: ${columnWidth}vw;}</style>`);
     } else {
@@ -233,46 +235,26 @@ function checkForColumnCount() {
 }
 
 function setupPage() {
-    if (settingBuildNums_BBFG && $("#lblBBFGVer").length == 0) {
-        $("#header-row").append('<span class="slash">/</span><span id="lblBBFGVer" > BBFG Version: </span><span id="bbfgVerNum"><img class="load-spinner" id="bbfgVerSpinner" src="' + tfsPath + '/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
-        $("#header-row").css("color", "#FFF");
-        $("#bbfgVerNum").css("font-weight", "700");
-    }
     if (settingBuildNums_GO && $("#lblGOVer").length == 0) {
-        $("#header-row").append('<span class="slash">-</span><span id="lblGOVer" > GO Version: </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="' + tfsPath + '/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>')
-        $("#header-row").css("color", "#FFF");
-        $("#goVerNum").css("font-weight", "700");
+
+        switch (tfsVersion) {
+            case 2015:
+                $("#header-row").append(`<span class="slash">-</span><span id="lblGOVer" > GO Version: </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="${tfsPath}/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>`);
+                $("#header-row").css("color", "#FFF");
+                $("#goVerNum").css("font-weight", "700");
+                break;
+            case 2018:
+                $(`#ms-vss-tfs-web-header-level1-navigation-text span.l1-navigation-text`).append(` / <span id="lblGOVer" > ${goVerPlaceholder} </span><span id="goVerNum"><img class="load-spinner" id="goVerSpinner" src="${tfsPath}/Areas/UrbanTurtle/Content/images/small-spinner.gif" style="margin: 9px 5px 0 6px;"/></span>`);
+                // $("#header-row").css("color", "#FFF");
+                $("#goVerNum").css("font-weight", "700");
+                break;
+        }
     }
 
 
 }
 
 function updateVerNumbers() {
-    if (settingBuildNums_BBFG) {
-        var bbfgxmlhttp = new XMLHttpRequest();
-        bbfgxmlhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == "200") {
-                try {
-                    var page1 = document.implementation.createHTMLDocument("");
-                    page1.documentElement.innerHTML = this.responseText;
-                    bbfgVersion = page1.querySelector('#M_M_M_M_B_B_B_Body_lblVersion').textContent.trim();
-                    bbfgVersionInt = parseInt(bbfgVersion.replace(/\./g, ""));
-                } catch (err) {
-                    console.log("Error fetching BBFG version.\n[See Options menu to disable BBFG version checking: chrome-extension://olfpjmbnimcoagkbkbnchlkcmloagdkd/options.html]");
-                    console.log(err);
-                    if (bbfgVersion == "") {
-                        bbfgVersion = "ERROR";
-                    }
-                }
-            }
-        };
-        try {
-            bbfgxmlhttp.open("GET", bbfgURL, true);
-            bbfgxmlhttp.send();
-        } catch (err) {
-            console.log("Error sending HTTP request (BBFG is rolling?)");
-        }
-    }
     if (settingBuildNums_GO) {
         var goxmlhttp = new XMLHttpRequest();
         goxmlhttp.onreadystatechange = function () {
@@ -280,7 +262,10 @@ function updateVerNumbers() {
                 try {
                     var page2 = document.implementation.createHTMLDocument("");
                     page2.documentElement.innerHTML = this.responseText;
-                    goVersion = page2.querySelector('#M_B_PC_lblVersion').textContent.trim();
+                    var sourceStr = page2.querySelector('#M_B_PC_lblVersion').textContent.trim();
+                    var verMatch = pattern.exec(sourceStr);
+                    goVersion = verMatch[2];
+                    goBranch = verMatch[1];
                     goVersionInt = parseInt(goVersion.replace(/\./g, ""));
                 } catch (err) {
                     console.log("Error fetching Go version.\n[See Options menu to disable Go version checking: chrome-extension://olfpjmbnimcoagkbkbnchlkcmloagdkd/options.html]");
@@ -394,39 +379,24 @@ function evaluateCardVer(card, labelVal) {
         $(card).find('.load-spinner').remove();
     } else if (match) {
         //Build number found.
-        labelValInt = parseInt(match[0].replace(/\./g, ""));
-        if (match[1] == '1' || match[1] == '2') {
-            if (settingBuildNums_GO) {
-                if (goVersion != "") {
-                    //This is a GO Version Number
-                    if (labelValInt > goVersionInt) {
-                        $(card).css('opacity', '0.6');
-                        $(card).css('border', '1px solid #d6d6d6');
-                    } else {
-                        $(card).css('opacity', $(card).attr('opac'));
-                        $(card).css('border', '1px outset  #d6d6d6');
-                    }
+        var branch = match[1];
+        var version = match[2];
+        labelValInt = parseInt(version.replace(/\./g, ""));
+        if (settingBuildNums_GO) {
+            if (goVersion != "" && goBranch != "") {
+                //This is a GO Version Number
+                if (goBranch == branch && labelValInt <= goVersionInt) {
+                    $(card).css('opacity', $(card).attr('opac'));
+                    $(card).css('border', '1px outset  #d6d6d6');
+                } else {
+                    $(card).css('opacity', '0.6');
+                    $(card).css('border', '1px solid #d6d6d6');
                 }
-            } else {
-                $(card).css('opacity', '1');
             }
+        } else {
+            $(card).css('opacity', '1');
         }
-        if (match[1] == '4') {
-            if (settingBuildNums_BBFG) {
-                if (bbfgVersion != "") {
-                    //This is a BBFG Version Number
-                    if (labelValInt > bbfgVersionInt) {
-                        $(card).css('opacity', '0.6');
-                        $(card).css('border', '1px solid #d6d6d6');
-                    } else {
-                        $(card).css('opacity', $(card).attr('opac'));
-                        $(card).css('border', '1px outset  #d6d6d6');
-                    }
-                }
-            } else {
-                $(card).css('opacity', '1');
-            }
-        }
+
         $(card).find('.load-spinner').remove();
     }
     if (labelVal) {
@@ -674,11 +644,9 @@ function loadSettings() {
         if (items.sBuildNums == false) {
             settingBuildNums = false;
             settingBuildNums_GO = false;
-            settingBuildNums_BBFG = false;
         } else {
             settingBuildNums = true;
             settingBuildNums_GO = true;
-            settingBuildNums_BBFG = false;
         }
         settingTagIcons = items.sIcons;
         settingDisplayTags = items.sTags;
